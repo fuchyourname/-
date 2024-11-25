@@ -1,0 +1,30 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+#  rabbitmq:
+#    host: 192.168.154.10 # 主机名
+#    port: 5672 # 端口
+#    virtual-host: / # 虚拟主机
+#    username: and # 用户名
+#    password: 123321 # 密码
+#  data:
+#    redis:
+#      port: 6379
+#      host: localhost
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/music?characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+## ====================== ↓↓↓↓↓↓ MinIO文件服务器 ↓↓↓↓↓↓ ======================
+minio:
+  url: http://192.168.154.1:9000 #注意此处端口，并非Minio默认端口，并且不是Minio网页端口
+  accessKey: and
+  secretKey: 123456789root
+  bucket: music
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

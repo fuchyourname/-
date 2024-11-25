@@ -1,0 +1,21 @@
+/* src/assets/styles/global.css */
+html, body {
+    overflow: auto;
+    height: 100%;
+  }
+  
+  /* WebKit browsers (Chrome, Safari) */
+  body::-webkit-scrollbar {
+    display: none; /* 隐藏滚动条 */
+  }
+  
+  /* Firefox */
+  body {
+    scrollbar-width: none; /* 隐藏滚动条 */
+    scrollbar-color: transparent transparent; /* 隐藏滚动条颜色 */
+  }
+  
+  /* IE and Edge */
+  body {
+    -ms-overflow-style: none; /* 隐藏滚动条 */
+  }
