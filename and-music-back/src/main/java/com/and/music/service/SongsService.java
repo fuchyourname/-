@@ -14,8 +14,12 @@ import org.springframework.stereotype.Service;
 */
 public interface SongsService extends IService<Songs> {
 
+    // 上传歌曲
     public R upload(FileDto fileDto);
 
-    // 新增歌曲
-    public R addSong(SongDto songDto);
+    // 获取歌曲详情
+    public R getSongDetail(Integer songId);
+
+    // 用户上传歌曲
+    public R uploadSong(SongDto songDto);
 }

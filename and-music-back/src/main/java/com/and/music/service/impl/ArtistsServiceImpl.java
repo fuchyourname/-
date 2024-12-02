@@ -108,8 +108,8 @@ public class ArtistsServiceImpl extends ServiceImpl<ArtistsMapper, Artists>
             return R.fail("参数错误");
         }
         LambdaQueryWrapper<Artists> queryWrapper = new LambdaQueryWrapper<>();
-        if (ObjectUtil.isNotEmpty(artistDto.getName())) {
-            queryWrapper.like(Artists::getName, artistDto.getName());
+        if (ObjectUtil.isNotEmpty(artistDto.getInitials())) {
+            queryWrapper.eq(Artists::getInitials, artistDto.getInitials());
         }
         if (ObjectUtil.isNotEmpty(artistDto.getSex())) {
             queryWrapper.eq(Artists::getSex, artistDto.getSex());

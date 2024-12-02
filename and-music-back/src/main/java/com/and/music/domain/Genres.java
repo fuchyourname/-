@@ -27,6 +27,9 @@ public class Genres implements Serializable {
 
     private String description;
 
+    // 1-歌曲 2-歌手 3-歌单
+    private Integer type;
+
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 

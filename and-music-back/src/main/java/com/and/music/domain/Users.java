@@ -31,6 +31,8 @@ public class Users implements Serializable {
 
     private String email;
 
+    private String description;
+
     private String picUrl;
 
     @TableField(fill = FieldFill.INSERT)

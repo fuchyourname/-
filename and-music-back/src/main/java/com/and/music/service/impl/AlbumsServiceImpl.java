@@ -20,6 +20,16 @@ public class AlbumsServiceImpl extends ServiceImpl<AlbumsMapper, Albums>
     public R addAlbum(AlbumDto albumDto) {
         return null;
     }
+
+    @Override
+    public R getAlbumList(Integer userId) {
+        return null;
+    }
+
+    @Override
+    public R getAlbumDetail(Integer albumId) {
+        return null;
+    }
 }
 
 

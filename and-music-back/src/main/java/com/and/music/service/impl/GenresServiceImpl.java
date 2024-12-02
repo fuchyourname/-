@@ -21,6 +21,11 @@ public class GenresServiceImpl extends ServiceImpl<GenresMapper, Genres>
     public R addGenres(GenreDto genreDto) {
         return null;
     }
+
+    @Override
+    public R getGenresList(Integer type) {
+        return null;
+    }
 }
 
 

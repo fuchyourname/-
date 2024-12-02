@@ -1,4 +1,6 @@
-import { createMemoryHistory, createRouter } from 'vue-router'
+// router/index.js
+import { createWebHistory, createRouter } from 'vue-router'
+import { useUserStore } from '../stores/user'
 
 import LoginView from '../views/LoginView.vue'
 import HomeView from '../views/HomeView.vue'
@@ -13,9 +15,12 @@ import SongListView from '../views/SongListView.vue'
 import CommunityView from '../views/CommunityView.vue'
 import SongListDetailsView from '../views/SongListDetailsView.vue'
 import IndexView from '../views/IndexView.vue'
-import SongsList from '../components/SongsList.vue'
 import CommentsList from '../components/CommentsList.vue'
 import MusicUploadView from '../views/MusicUploadView.vue'
+import MusicList from '../components/MusicList.vue'
+import DynamicsList from '../components/DynamicsList.vue'
+import MyMusicView from '../views/MyMusicView.vue'
+import SerachResView from '../views/SerachResView.vue'
 
 const routes = [
   { path: '/', component: LoginView },
@@ -29,22 +34,39 @@ const routes = [
         component: PersonView,
         children: [
           {
-            path: 'like',
-            component: LikedList
-          },
-          {
-            path: 'fans',
-            component: FansList
-          },
-          {
             path: 'playlist',
             component: MyPlaylist
           },
           {
-            path: 'follow',
-            component: FollowList
+            path: 'dynamicsList',
+            component: DynamicsList
           }
         ]
+      },
+      {
+        path: 'myMusic',
+        component: MyMusicView,
+        children: [
+          {
+            path: 'songlistdetails/:id',
+            component: SongListDetailsView,
+            props: true,
+          },
+        ]
+      },
+      {
+        path: 'serach/:query',
+        name: 'serachRes',
+        component: SerachResView,
+        props:true
+      },
+      {
+        path: 'follow',
+        component: FollowList
+      },
+      {
+        path: 'fans',
+        component: FansList
       },
       {
         path: 'player',
@@ -65,18 +87,6 @@ const routes = [
       {
         path: 'songlistdetails/:id',
         component: SongListDetailsView,
-        children: [
-          {
-            path: 'songs',
-            component: SongsList,
-            props: true
-          },
-          {
-            path: 'comment',
-            component: CommentsList,
-            props: true
-          }
-        ]
       },
       {
         path: 'index',
@@ -88,11 +98,10 @@ const routes = [
       }
     ]
   }
-  ,
 ]
 
 const router = createRouter({
-  history: createMemoryHistory(),
+  history: createWebHistory(),
   routes,
 })
 

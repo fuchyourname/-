@@ -15,15 +15,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class LikesServiceImpl extends ServiceImpl<LikesMapper, Likes>
     implements LikesService {
-    @Override
-    public R addLikes(Integer songListId, Integer userId) {
-        return null;
-    }
-
-    @Override
-    public R removeLikes(Integer songListId, Integer userId) {
-        return null;
-    }
 
     @Override
     public R removeSong(Integer songId, Integer userId) {
@@ -32,6 +23,16 @@ public class LikesServiceImpl extends ServiceImpl<LikesMapper, Likes>
 
     @Override
     public R addSong(Integer songId, Integer userId) {
+        return null;
+    }
+
+    @Override
+    public R removeDynamic(Integer dynamicId, Integer userId) {
+        return null;
+    }
+
+    @Override
+    public R addDynamic(Integer dynamicId, Integer userId) {
         return null;
     }
 }

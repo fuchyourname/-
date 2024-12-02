@@ -21,4 +21,6 @@ public interface PlaylistsService extends IService<Playlists> {
     public R getRecommendPlaylists();
     // 获取歌单详情
     public R getPlaylistDetail(Integer playlistId);
+    // 根据类型获取歌单列表
+    public R getPlaylistsByType(Integer type);
 }

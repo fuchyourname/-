@@ -38,4 +38,9 @@ public class MusicController {
 
         return songsService.upload(fileDto);
     }
+
+    @GetMapping("/getSongDetail")
+    public R getSongDetail(@RequestParam("songId") Integer songId) {
+        return songsService.getSongDetail(songId);
+    }
 }

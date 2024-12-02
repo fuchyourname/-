@@ -46,12 +46,43 @@
           </transition>
         </Popover>
 
-        <RouterLink to="/home/my" class="text-sm font-semibold leading-6 text-gray-900">我的音乐</RouterLink>
-        <RouterLink to="/home/community" class="text-sm font-semibold leading-6 text-gray-900">社区</RouterLink>
+        <RouterLink to="/home/myMusic" class="text-sm font-semibold leading-6 text-gray-900">我的音乐</RouterLink>
+        <RouterLink to="/home/community" class="text-sm font-semibold leading-6 text-gray-900">关注</RouterLink>
         <RouterLink to="/home/upload" class="text-sm font-semibold leading-6 text-gray-900">云音乐</RouterLink>
       </PopoverGroup>
       <div class="hidden lg:flex lg:flex-1 lg:justify-end">
-        <a @click="open = true" class="text-sm font-semibold leading-6 text-gray-900">登录<span aria-hidden="true">&rarr;</span></a>
+
+        <a @click="searchVisible = true" class="ml-2 p-2 text-gray-400 hover:text-gray-500 mr-4">
+                  <MagnifyingGlassIcon class="size-6" aria-hidden="true" />
+                </a>
+
+        <button type="button" class="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+            <!-- <span class="absolute -inset-1.5" /> -->
+            <BellIcon class="size-6" aria-hidden="true" />
+          </button>
+
+        <Menu as="div" class="relative ml-3">
+            <div>
+              <MenuButton class="relative flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                <span class="absolute -inset-1.5" />
+                <span class="sr-only">Open user menu</span>
+                <img class="size-10 rounded-full" :src="user.avatar" alt="" />
+              </MenuButton>
+            </div>
+            <transition enter-active-class="transition ease-out duration-200" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
+              <MenuItems class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none">
+                <MenuItem v-slot="{ active }">
+                  <RouterLink to="/home/my/playlist" :class="[active ? 'bg-gray-100 outline-none' : '', 'block px-4 py-2 text-sm text-gray-700']">我的</RouterLink>
+                </MenuItem>
+                <MenuItem v-slot="{ active }">
+                  <a href="#" :class="[active ? 'bg-gray-100 outline-none' : '', 'block px-4 py-2 text-sm text-gray-700']">设置</a>
+                </MenuItem>
+                <MenuItem v-slot="{ active }">
+                  <a href="#" :class="[active ? 'bg-gray-100 outline-none' : '', 'block px-4 py-2 text-sm text-gray-700']">登出</a>
+                </MenuItem>
+              </MenuItems>
+            </transition>
+          </Menu>
       </div>
     </nav>
   </header>
@@ -60,89 +91,49 @@
   <div class="fixed bottom-0 left-0 right-0 h-[70px] bg-gray-200">
     <MusicPlayer />
   </div>
-
-  <TransitionRoot as="template" :show="open">
-    <Dialog class="relative z-10" @close="open = false">
-      <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
-        leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
-        <div class="fixed inset-0 bg-gray-500/75 transition-opacity" />
-      </TransitionChild>
-
-      <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-          <TransitionChild as="template" enter="ease-out duration-300"
-            enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
-            leave-from="opacity-100 translate-y-0 sm:scale-100"
-            leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-            <DialogPanel
-              class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
-              <div>
-                <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-green-100">
-                  <CheckIcon class="size-6 text-green-600" aria-hidden="true" />
-                </div>
-                <div class="mt-3 text-center sm:mt-5">
-                  <DialogTitle as="h3" class="text-base font-semibold text-gray-900">密码登录</DialogTitle>
-                  <div class="relative mt-2">
-                    <label for="name"
-                      class="absolute -top-2 left-2 inline-block bg-white px-1 text-xs font-medium text-gray-900">User
-                      Name</label>
-                    <input type="text" name="name" id="name"
-                      class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-                      placeholder="用户名" />
-                  </div>
-                  <div class="relative mt-4">
-                    <label for="name"
-                      class="absolute -top-2 left-2 inline-block bg-white px-1 text-xs font-medium text-gray-900">Password</label>
-                    <input type="password" name="password" id="password"
-                      class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-                      placeholder="密码" />
-                  </div>
-                </div>
-              </div>
-              <div class="mt-5 sm:mt-6">
-                <button type="button"
-                  class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  @click="open = false">登录</button>
-              </div>
-            </DialogPanel>
-          </TransitionChild>
-        </div>
-      </div>
-    </Dialog>
-  </TransitionRoot>
+  <SearchDialog v-if="searchVisible" @close="closeSearchDialog" />
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
 import {
-  Dialog,
-  DialogPanel,
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
   Popover,
   PopoverButton,
   PopoverGroup,
   PopoverPanel,
+  Menu, MenuButton, MenuItem, MenuItems
 } from '@headlessui/vue'
 import {
   ArrowPathIcon,
-  Bars3Icon,
   ChartPieIcon,
   CursorArrowRaysIcon,
   FingerPrintIcon,
   SquaresPlusIcon,
-  XMarkIcon,
 } from '@heroicons/vue/24/outline'
-import { ChevronDownIcon, PhoneIcon, PlayCircleIcon } from '@heroicons/vue/20/solid'
+import { BellIcon,MagnifyingGlassIcon} from '@heroicons/vue/24/outline'
+import { ChevronDownIcon, PhoneIcon, PlayCircleIcon} from '@heroicons/vue/20/solid'
 import { RouterLink, RouterView } from 'vue-router';
 import { useRouter } from 'vue-router';
 import MusicPlayer from '../components/MusicPlayer.vue';
-import { DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
-import { CheckIcon } from '@heroicons/vue/24/outline'
+import SearchDialog from '../components/SearchDialog.vue'
+import { useUserStore } from '../stores/user';
+import { computed } from 'vue';
 
 const open = ref(true)
+const searchVisible = ref(false)
+
+const userStore = useUserStore();
+
+// 计算属性来获取 user 信息
+const user = computed(() => userStore.user);
+
+const openSearchDialog = () => {
+  searchVisible.value = true
+}
+
+const closeSearchDialog = () => {
+  searchVisible.value = false
+}
 
 const products = [
   { name: '首页', description: 'Get a better understanding of your traffic', href: '/home/index', icon: ChartPieIcon },

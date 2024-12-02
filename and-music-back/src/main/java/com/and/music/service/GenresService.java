@@ -15,4 +15,7 @@ public interface GenresService extends IService<Genres> {
 
     // 新增分类
     public R addGenres(GenreDto genreDto);
+
+    // 获取分类列表根据类型
+    public R getGenresList(Integer type);
 }

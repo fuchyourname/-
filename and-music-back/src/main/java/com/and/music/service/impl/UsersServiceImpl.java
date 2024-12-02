@@ -6,6 +6,8 @@ import com.and.music.domain.Users;
 import com.and.music.dto.UserDto;
 import com.and.music.mapper.UsersMapper;
 import com.and.music.service.UsersService;
+import com.and.music.vo.UserVo;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
@@ -24,11 +26,15 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         if (ObjectUtil.isEmpty(userDto)) {
             return R.fail("参数错误");
         }
-        Integer userId = userDto.getUserId();
-        if (ObjectUtil.isNotEmpty(userId)) {
-            Users user = getById(userId);
+        String userName = userDto.getUserName();
+        if (ObjectUtil.isNotEmpty(userName)) {
+            Users user = getOne(new LambdaQueryWrapper<Users>().eq(Users::getUserName, userName));
             if (ObjectUtil.isNotEmpty(user) && user.getPassword().equals(userDto.getPassword())) {
-                return R.ok();
+                UserVo userVo = new UserVo()
+                        .setUserId(user.getUserId())
+                        .setUsername(user.getUserName())
+                        .setAvatar(user.getPicUrl());
+                return R.ok(userVo);
             }
             return R.fail("用户名或密码错误");
         }

@@ -17,10 +17,4 @@ public interface FavoritesService extends IService<Favorites> {
 
     // 取消收藏歌单
     public R removeFavorites(Integer playlistId, Integer userId);
-
-    // 收藏歌曲
-    public R addSong(Integer songId, Integer userId);
-
-    // 取消收藏歌曲
-    public R removeSong(Integer songId, Integer userId);
 }

@@ -16,5 +16,4 @@ public interface UsersService extends IService<Users> {
     R checkUser(UserDto userDto);
 
     R register(UserDto userDto);
-
 }

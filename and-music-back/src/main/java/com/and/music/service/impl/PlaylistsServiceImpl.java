@@ -2,16 +2,14 @@ package com.and.music.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.and.music.common.R;
-import com.and.music.domain.Playlists;
-import com.and.music.domain.Users;
+import com.and.music.domain.*;
 import com.and.music.dto.PlaylistDto;
-import com.and.music.mapper.PlaylistSongsMapper;
-import com.and.music.mapper.PlaylistsMapper;
-import com.and.music.mapper.UsersMapper;
+import com.and.music.mapper.*;
 import com.and.music.service.PlaylistsService;
 import com.and.music.utils.MinioUtils;
 import com.and.music.utils.UserContext;
 import com.and.music.vo.PlaylistVo;
+import com.and.music.vo.SongVo;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -21,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -35,7 +34,12 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
     private UsersMapper usersMapper;
     @Resource
     private MinioUtils minioUtils;
-
+    @Resource
+    private AlbumsMapper albumsMapper;
+    @Resource
+    private ArtistsMapper artistsMapper;
+    @Resource
+    private SongsMapper songsMapper;
     @Resource
     private PlaylistSongsMapper playlistSongsMapper;
 
@@ -124,8 +128,7 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
                    .setUserName(usersList.stream().filter(users -> users.getUserId().equals(playlists.getUserId())).findFirst().get().getUserName())
                    .setName(playlists.getName())
                    .setDescription(playlists.getDescription())
-                   .setImageUrl(playlists.getImageUrl())
-                   .setSongCount(playlists.getSongCount());
+                   .setImageUrl(playlists.getImageUrl());
         }).collect(Collectors.toList());
 
         return R.ok(playlistVoList);
@@ -137,11 +140,55 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
         if (ObjectUtil.isEmpty(playlistId)) {
             return R.fail("参数错误");
         }
+        PlaylistVo playlistVo = new PlaylistVo();
+
         Playlists playlists = getById(playlistId);
-        if (ObjectUtil.isNotEmpty(playlists)) {
-            return R.ok(playlists);
+        if (ObjectUtil.isEmpty(playlists)) {
+            return R.fail("未找到该歌单");
         }
-        return R.fail("未找到该歌单");
+        playlistVo.setPlaylistId(playlists.getPlaylistId())
+                .setName(playlists.getName())
+                .setDescription(playlists.getDescription())
+                .setImageUrl(playlists.getImageUrl());
+        Users users = usersMapper.selectById(playlists.getUserId());
+        if (ObjectUtil.isNotEmpty(users)) {
+            playlistVo.setUserName(users.getUserName());
+            playlistVo.setUserAvatar(users.getPicUrl());
+        }
+        List<PlaylistSongs> playlistSongsList =
+                playlistSongsMapper.selectList(
+                        new QueryWrapper<PlaylistSongs>().eq("playlist_id", playlistId));
+        if (ObjectUtil.isEmpty(playlistSongsList)) {
+            return R.ok(playlistVo);
+        }
+        List<Integer> songIds = playlistSongsList.
+                stream().map(PlaylistSongs::getSongId).collect(Collectors.toList());
+        List<Songs> songsList = songsMapper.selectBatchIds(songIds);
+        if (ObjectUtil.isEmpty(songsList)) {
+            return R.ok(playlistVo);
+        }
+        List<Integer> albumIds = songsList.stream().map(Songs::getAlbumId).collect(Collectors.toList());
+        List<Integer> artistIds = songsList.stream().map(Songs::getArtistId).collect(Collectors.toList());
+        List<Albums> albumsList = albumsMapper.selectBatchIds(albumIds);
+        List<Artists> artistsList = artistsMapper.selectBatchIds(artistIds);
+        Map<Integer, Albums> albumsMap = albumsList.stream().collect(Collectors.toMap(Albums::getAlbumId, albums -> albums));
+        Map<Integer, Artists> artistsMap = artistsList.stream().collect(Collectors.toMap(Artists::getArtistId, artists -> artists));
+        playlistVo.setSongs(songsList.stream().map(songs -> {
+            return new SongVo()
+                    .setSongId(songs.getSongId())
+                    .setTitle(songs.getTitle())
+                    .setAlbum(albumsMap.get(songs.getAlbumId()).getTitle())
+                    .setArtist(artistsMap.get(songs.getArtistId()).getName())
+                    .setCoverPath(songs.getCoverPath())
+                    .setFilePath(songs.getFilePath())
+                    .setLyricPath(songs.getLyricPath());
+        }).collect(Collectors.toList()));
+        return R.ok(playlistVo);
+    }
+
+    @Override
+    public R getPlaylistsByType(Integer type) {
+        return null;
     }
 }
 

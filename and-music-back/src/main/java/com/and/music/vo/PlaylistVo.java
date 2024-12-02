@@ -8,20 +8,17 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Accessors(chain = true)
 public class PlaylistVo {
 
     private Integer playlistId;
-
     private String userName;
-
+    private String userAvatar;
     private String name;
-
     private String description;
-
     private String imageUrl;
-
-    private Integer songCount;
+    private List<SongVo> songs;
 }

@@ -12,4 +12,7 @@ import org.springframework.stereotype.Service;
 */
 public interface CommentsService extends IService<Comments> {
 
+    // 给歌单评论
+    // 给歌曲评论
+    // 给动态评论
 }

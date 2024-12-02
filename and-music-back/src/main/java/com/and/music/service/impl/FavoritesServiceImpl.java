@@ -24,16 +24,6 @@ public class FavoritesServiceImpl extends ServiceImpl<FavoritesMapper, Favorites
     public R removeFavorites(Integer playlistId, Integer userId) {
         return null;
     }
-
-    @Override
-    public R addSong(Integer songId, Integer userId) {
-        return null;
-    }
-
-    @Override
-    public R removeSong(Integer songId, Integer userId) {
-        return null;
-    }
 }
 
 

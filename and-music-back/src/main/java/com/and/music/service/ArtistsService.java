@@ -20,6 +20,5 @@ public interface ArtistsService extends IService<Artists> {
     public R getArtistById(Integer artistId);
 
     // 根据查询条件获取歌手列表
-
     public R getArtists(ArtistDto artistDto);
 }

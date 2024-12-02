@@ -1,102 +1,73 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-  <ul role="list" class="divide-y divide-gray-100">
-    <li v-for="person in people" :key="person.email" class="relative flex justify-between gap-x-6 py-5">
-      <div class="flex min-w-0 gap-x-4">
-        <img class="h-12 w-12 flex-none rounded-full bg-gray-50" :src="person.imageUrl" alt="" />
-        <div class="min-w-0 flex-auto">
-          <p class="text-sm font-semibold leading-6 text-gray-900">
-            <a :href="person.href">
-              <span class="absolute inset-x-0 -top-px bottom-0" />
-              {{ person.name }}
-            </a>
-          </p>
-          <p class="mt-1 flex text-xs leading-5 text-gray-500">
-            <a :href="`mailto:${person.email}`" class="relative truncate hover:underline">{{ person.email }}</a>
-          </p>
-        </div>
+  <span class="ml-32 text-2xl">我的关注</span>
+  <div class="mt-4 ml-32">
+    <div class="hidden sm:block">
+      <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+          <button v-for="tab in tabs" @click="selectTab(tab)"
+            :class="[tab.current ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:border-gray-200 hover:text-gray-700', 'flex whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium']">
+            {{ tab.name }}
+          </button>
+        </nav>
       </div>
-      <div class="flex shrink-0 items-center gap-x-4">
-        <div class="hidden sm:flex sm:flex-col sm:items-end">
-          <p class="text-sm leading-6 text-gray-900">{{ person.role }}</p>
-          <p v-if="person.lastSeen" class="mt-1 text-xs leading-5 text-gray-500">
-            Last seen <time :datetime="person.lastSeenDateTime">{{ person.lastSeen }}</time>
-          </p>
-          <div v-else class="mt-1 flex items-center gap-x-1.5">
-            <div class="flex-none rounded-full bg-emerald-500/20 p-1">
-              <div class="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            </div>
-            <p class="text-xs leading-5 text-gray-500">Online</p>
-          </div>
-        </div>
-        <ChevronRightIcon class="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
+    </div>
+  </div>
+  <div class="grid grid-cols-4 gap-4 mt-8 ml-32">
+    <div v-for="follow in followList" :key="follow.id" class="flex items-center p-4 bg-white">
+      <img :src="follow.picUrl" alt="头像" class="w-16 h-16 rounded-full mr-4" />
+      <div class="flex-1">
+        <span class="text-xl font-medium">{{ follow.name }}</span>
+        <p class="text-gray-600">{{ follow.bio }}</p>
       </div>
-    </li>
-  </ul>
-</div>
+      <button class="ml-auto flex px-4 py-2 rounded" @click="toggleChat(follow)">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+          stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+        </svg>
+        私信</button>
+    </div>
+  </div>
+  <ChatDialog v-for="follow in chatOpenList" :key="follow.id" :user="follow" @close="closeChat(follow)"></ChatDialog>
 </template>
 
 <script setup>
-import { ChevronRightIcon } from '@heroicons/vue/20/solid'
+import { ref } from 'vue'
+import axios from 'axios'
+import { useRoute, useRouter } from 'vue-router'
+import ChatDialog from './ChatDialog.vue';
 
-const people = [
-  {
-    name: 'Leslie Alexander',
-    email: 'leslie.alexander@example.com',
-    role: 'Co-Founder / CEO',
-    imageUrl:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    href: '#',
-    lastSeen: '3h ago',
-    lastSeenDateTime: '2023-01-23T13:23Z',
-  },
-  {
-    name: 'Michael Foster',
-    email: 'michael.foster@example.com',
-    role: 'Co-Founder / CTO',
-    imageUrl:
-      'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    href: '#',
-    lastSeen: '3h ago',
-    lastSeenDateTime: '2023-01-23T13:23Z',
-  },
-  {
-    name: 'Dries Vincent',
-    email: 'dries.vincent@example.com',
-    role: 'Business Relations',
-    imageUrl:
-      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    href: '#',
-    lastSeen: null,
-  },
-  {
-    name: 'Lindsay Walton',
-    email: 'lindsay.walton@example.com',
-    role: 'Front-end Developer',
-    imageUrl:
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    href: '#',
-    lastSeen: '3h ago',
-    lastSeenDateTime: '2023-01-23T13:23Z',
-  },
-  {
-    name: 'Courtney Henry',
-    email: 'courtney.henry@example.com',
-    role: 'Designer',
-    imageUrl:
-      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    href: '#',
-    lastSeen: '3h ago',
-    lastSeenDateTime: '2023-01-23T13:23Z',
-  },
-  {
-    name: 'Tom Cook',
-    email: 'tom.cook@example.com',
-    role: 'Director of Product',
-    imageUrl:
-      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    href: '#',
-    lastSeen: null,
-  },
+const router = useRouter()
+const chatOpenList = ref([])
+
+const tabs = [
+  { name: '全部', href: '/home/my/playlist', count: '52', current: true },
+  { name: '歌手', href: '/home/my/dynamicsList', count: '6', current: false },
+  { name: '用户', href: '/home/my/dynamicsList', count: '6', current: false },
 ]
+
+const followList = [
+  { id: 1, name: '张杰', nationality: '中国', bio: '我是一个歌手', picUrl: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg' },
+  { id: 2, name: '李华', nationality: '中国', bio: '我是一个用户', picUrl: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg' },
+  { id: 3, name: '王五', nationality: '中国', bio: '我是一个歌手', picUrl: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg' },
+  { id: 4, name: '赵六', nationality: '中国', bio: '我是一个用户', picUrl: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg' },
+  { id: 5, name: '孙七', nationality: '中国', bio: '我是一个歌手', picUrl: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg' },
+  { id: 6, name: '周八', nationality: '中国', bio: '我是一个用户', picUrl: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg' }
+]
+
+const toggleChat = (follow) => {
+  const index = chatOpenList.value.findIndex(f => f.id === follow.id);
+  if (index === -1) {
+    chatOpenList.value.push(follow);
+  } else {
+    chatOpenList.value.splice(index, 1);
+  }
+}
+
+const closeChat = (follow) => {
+  const index = chatOpenList.value.findIndex(f => f.id === follow.id);
+  if (index !== -1) {
+    chatOpenList.value.splice(index, 1);
+  }
+}
 </script>
