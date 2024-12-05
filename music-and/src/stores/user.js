@@ -6,14 +6,15 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     user: null,
   }),
-  persist: true,
+  // persist: true,
   actions: {
     async login(user) {
       try {
-        const response = await axios.post('http://localhost:8080/index/login', user);
+        const response = await axios.post('/api/index/login', user);
         if (response.data.success) {
           this.setUser(response.data.data);
           console.log('Login successful!');
+          localStorage.setItem('user', JSON.stringify(response.data.data)); // 存储到本地存储
           return true;
         } else {
           throw new Error('Login failed, please check your credentials.');
@@ -22,6 +23,23 @@ export const useUserStore = defineStore('user', {
         console.error("There was an error!", error);
         throw new Error('An error occurred while trying to log in.');
       }
+    },
+    async logout() {
+      localStorage.removeItem('user'); // 清除本地存储
+      return axios.get('/api/index/logout');
+    },
+    async initialize() {
+      return new Promise((resolve, reject) => {
+        try {
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            this.user = JSON.parse(storedUser); // 从本地存储恢复
+          }
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      });
     },
     setUser(user) {
       this.user = user;

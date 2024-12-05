@@ -1,20 +1,23 @@
 package com.and.music.dto;
 
+
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 
 @Data
 @Accessors(chain = true)
-public class GenreDto {
-
+public class UserSongDto {
+    private MultipartFile pic;
     private String name;
-    private String description;
-    // 1-歌曲 2-歌手 3-歌单
+    private Integer singer;
+    private MultipartFile song;
+    private Integer album;
     private Integer type;
 }

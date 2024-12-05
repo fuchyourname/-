@@ -4,9 +4,12 @@ import com.and.music.common.R;
 import com.and.music.domain.Albums;
 import com.and.music.dto.AlbumDto;
 import com.and.music.mapper.AlbumsMapper;
+import com.and.music.mapper.SongsMapper;
 import com.and.music.service.AlbumsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
 * @author and
@@ -16,6 +19,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class AlbumsServiceImpl extends ServiceImpl<AlbumsMapper, Albums>
     implements AlbumsService {
+
+    @Resource
+    private SongsMapper songsMapper;
     @Override
     public R addAlbum(AlbumDto albumDto) {
         return null;
@@ -28,6 +34,7 @@ public class AlbumsServiceImpl extends ServiceImpl<AlbumsMapper, Albums>
 
     @Override
     public R getAlbumDetail(Integer albumId) {
+
         return null;
     }
 }

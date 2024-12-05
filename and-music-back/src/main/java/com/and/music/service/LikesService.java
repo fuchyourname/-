@@ -12,11 +12,11 @@ import org.springframework.stereotype.Service;
 */
 public interface LikesService extends IService<Likes> {
     // 点赞歌曲
-    public R removeSong(Integer songId, Integer userId);
+    public R removeSong(Integer songId);
     // 取消点赞歌曲
-    public R addSong(Integer songId, Integer userId);
+    public R addSong(Integer songId);
     // 点赞动态
-    public R removeDynamic(Integer dynamicId, Integer userId);
+    public R removeDynamic(Integer dynamicId);
     // 取消点赞动态
-    public R addDynamic(Integer dynamicId, Integer userId);
+    public R addDynamic(Integer dynamicId);
 }

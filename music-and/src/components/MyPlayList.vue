@@ -1,6 +1,6 @@
 <template>
-    <div class="ml-32">
-        <div class="mt-7">
+    <div class="ml-32 mt-4">
+       
             <span class="font-sans">我创建的歌单</span>
             <div
                 class="mt-4 grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 sm:gap-y-8 lg:grid-cols-3 lg:gap-x-1 xl:grid-cols-6 w-full">
@@ -13,11 +13,6 @@
                         <span class="absolute inset-0" />
                         {{ playlist.name }}
                     </h3>
-                    <p class="mt-1 text-lg font-medium">
-                        <span class="text-gray-900">
-                            {{ playlist.description }}
-                        </span>
-                    </p>
                 </div>
             </div>
             <div>
@@ -35,15 +30,10 @@
                             <span class="absolute inset-0" />
                             {{ playlist.name }}
                         </h3>
-                        <p class="mt-1 text-lg font-medium">
-                            <span class="text-gray-900">
-                                {{ playlist.description }}
-                            </span>
-                        </p>
                     </div>
                 </div>
             </div>
-        </div>
+      
         </div>
 </template>
 <script setup>
@@ -54,7 +44,7 @@ import { onMounted } from 'vue'
 const playlists = ref([])
 
 onMounted(() => {
-    axios.get('http://127.0.0.1:8080/playList/getRecommendPlayList')
+    axios.get('/api/playList/getRecommendPlayList')
         .then(response => {
             playlists.value = response.data.data
             console.log(response.data.data)

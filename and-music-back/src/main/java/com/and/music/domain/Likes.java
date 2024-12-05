@@ -28,6 +28,7 @@ public class Likes implements Serializable {
 
     private Integer userId;
 
+    // 1-歌曲 2-歌单 3-动态
     private Integer type;
 
     private Integer contentId;

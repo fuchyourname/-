@@ -6,10 +6,14 @@ import com.and.music.domain.Users;
 import com.and.music.dto.UserDto;
 import com.and.music.mapper.UsersMapper;
 import com.and.music.service.UsersService;
+import com.and.music.utils.UserContext;
 import com.and.music.vo.UserVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpSession;
 
 /**
 * @author and
@@ -17,11 +21,12 @@ import org.springframework.stereotype.Service;
 * @createDate 2024-10-14 15:31:31
 */
 @Service
+@Slf4j
 public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
     implements UsersService {
 
     @Override
-    public R checkUser(UserDto userDto) {
+    public R checkUser(UserDto userDto, HttpSession session) {
 
         if (ObjectUtil.isEmpty(userDto)) {
             return R.fail("参数错误");
@@ -34,6 +39,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
                         .setUserId(user.getUserId())
                         .setUsername(user.getUserName())
                         .setAvatar(user.getPicUrl());
+                session.setAttribute("user", user);
                 return R.ok(userVo);
             }
             return R.fail("用户名或密码错误");

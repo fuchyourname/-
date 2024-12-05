@@ -1,20 +1,42 @@
 package com.and.music.utils;
 
-import org.springframework.stereotype.Component;
+import cn.hutool.core.util.ObjectUtil;
+import com.and.music.common.CommonConstants;
+import com.and.music.dto.FileDto;
+import org.springframework.web.multipart.MultipartFile;
 
-@Component
 public class PathUtils {
 
-    // 封面图片根据类型生成路径
-    public static String getCoverPath(Integer type, Integer id) {
-        return "cover/" + type + "/" + id;
+    public static String getCoverPath(FileDto fileDto, Integer songId) {
+
+        MultipartFile musicPic = fileDto.getMusicPic();
+        // 获取文件后缀
+        String fileSuffix = musicPic.getOriginalFilename().
+                substring(musicPic.getOriginalFilename().lastIndexOf(".") + 1);
+        // 组成唯一文件名
+        return String.format("%s/%s/%s.%s",
+                CommonConstants.IMAGE_PREFIX, fileDto.getGenreId(), songId, fileSuffix);
     }
-    // 音频根据歌手id生成路径
-    public static String getMusicPath(Integer id) {
-        return "file/" + id;
+
+    public static String getMusicPath(FileDto fileDto, Integer songId) {
+
+        MultipartFile musicPic = fileDto.getMusicPic();
+        // 获取文件后缀
+        String fileSuffix = musicPic.getOriginalFilename().
+                substring(musicPic.getOriginalFilename().lastIndexOf(".") + 1);
+        // 组成唯一文件名
+        return String.format("%s/%s.%s",
+                CommonConstants.MUSIC_PREFIX, songId, fileSuffix);
     }
-    // 歌词根据歌曲id生成路径
-    public static String getLyricPath(Integer id) {
-        return "lyric/" + id;
+
+    public static String getLyricPath(FileDto fileDto, Integer songId) {
+
+        MultipartFile musicPic = fileDto.getMusicPic();
+        // 获取文件后缀
+        String fileSuffix = musicPic.getOriginalFilename().
+                substring(musicPic.getOriginalFilename().lastIndexOf(".") + 1);
+        // 组成唯一文件名
+        return String.format("%s/%s.%s",
+                CommonConstants.LYRIC_PREFIX, songId, fileSuffix);
     }
 }

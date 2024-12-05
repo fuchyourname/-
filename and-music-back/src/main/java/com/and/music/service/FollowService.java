@@ -7,20 +7,20 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface FollowService extends IService<Follow> {
 
     // 关注好友
-    public R addFollow(Integer userId, Integer followUserId);
+    public R addFollow(Integer followUserId);
 
     // 取消关注
-    public R removeFollow(Integer userId, Integer followUserId);
+    public R removeFollow(Integer followUserId);
 
     // 获取关注列表
-    public R getFollowList(Integer userId);
+    public R getFollowList();
 
     // 关注歌手
-    public R addSinger(Integer userId, Integer singerId);
+    public R addSinger(Integer singerId);
 
     // 取消关注歌手
-    public R removeSinger(Integer userId, Integer singerId);
+    public R removeSinger(Integer singerId);
 
     // 获取关注歌手列表
-    public R getSingerList(Integer userId);
+    public R getSingerList();
 }

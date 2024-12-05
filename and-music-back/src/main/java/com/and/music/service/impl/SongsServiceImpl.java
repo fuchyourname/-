@@ -2,11 +2,14 @@ package com.and.music.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.and.music.common.R;
+import com.and.music.config.MinioProperties;
 import com.and.music.domain.Albums;
 import com.and.music.domain.Artists;
 import com.and.music.domain.Songs;
+import com.and.music.domain.UserSongs;
 import com.and.music.dto.FileDto;
 import com.and.music.dto.SongDto;
+import com.and.music.dto.UserSongDto;
 import com.and.music.mapper.AlbumsMapper;
 import com.and.music.mapper.ArtistsMapper;
 import com.and.music.mapper.SongsMapper;
@@ -34,11 +37,11 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
     @Resource
     private MinioUtils minioUtils;
     @Resource
-    private PathUtils pathUtils;
-    @Resource
     private ArtistsMapper artistsMapper;
     @Resource
     private AlbumsMapper albumsMapper;
+    @Resource
+    private MinioProperties minioAutoProperties;
 
     @Override
     @Transactional
@@ -57,40 +60,28 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
         try {
             if (fileDto.getMusicFile() != null) {
                 // 上传歌曲文件
-                String bucketName = "music";
-                String objectPath = "file/" + songId + ".mp3";
+                String objectPath = PathUtils.getMusicPath(fileDto, songId);
 
-                if (!minioUtils.bucketExists(bucketName)) {
-                    minioUtils.createBucket(bucketName);
-                }
-
-                String musicUrl = minioUtils.putObject(bucketName, objectPath, fileDto.getMusicFile());
+                String musicUrl = minioUtils.putObject(minioAutoProperties.getBucket(),
+                        objectPath, fileDto.getMusicFile());
                 songs.setFilePath(musicUrl);
             }
 
             if (fileDto.getMusicPic() != null) {
                 // 上传歌曲图片
-                String bucketName = "music";
-                String objectPath = "cover/" + songs.getGenreId() + "/" + songId + ".jpg";
+                String objectPath = PathUtils.getCoverPath(fileDto, songId);
 
-                if (!minioUtils.bucketExists(bucketName)) {
-                    minioUtils.createBucket(bucketName);
-                }
-
-                String coverUrl = minioUtils.putObject(bucketName, objectPath, fileDto.getMusicPic());
+                String coverUrl = minioUtils.putObject(minioAutoProperties.getBucket(),
+                        objectPath, fileDto.getMusicPic());
                 songs.setCoverPath(coverUrl);
             }
 
             if (fileDto.getLyricFile() != null) {
                 // 上传歌词文件
-                String bucketName = "music";
-                String objectPath = "lyric/" + songId + ".lyric";
+                String objectPath = PathUtils.getLyricPath(fileDto, songId);
 
-                if (!minioUtils.bucketExists(bucketName)) {
-                    minioUtils.createBucket(bucketName);
-                }
-
-                String lyricUrl = minioUtils.putObject(bucketName, objectPath, fileDto.getLyricFile());
+                String lyricUrl = minioUtils.putObject(minioAutoProperties.getBucket(),
+                        objectPath, fileDto.getLyricFile());
                 songs.setLyricPath(lyricUrl);
             }
 
@@ -139,7 +130,15 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
     }
 
     @Override
-    public R uploadSong(SongDto songDto) {
+    public R uploadSong(UserSongDto userSongDto) {
+
+        if (ObjectUtil.isEmpty(userSongDto)) {
+            return R.fail("参数错误");
+        }
+        if (ObjectUtil.isEmpty(userSongDto.getSong())) {
+            return R.fail("文件不能为空");
+        }
+        // 获取文件的类型、大小、文件名
         return null;
     }
 }

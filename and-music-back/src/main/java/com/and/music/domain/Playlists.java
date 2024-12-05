@@ -31,6 +31,8 @@ public class Playlists implements Serializable {
 
     private String description;
 
+    private Integer type;
+
     private String imageUrl;
 
     private Integer songCount;

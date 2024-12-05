@@ -29,10 +29,17 @@
             leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
             <DialogPanel
               class="h-96 relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:p-6">
+              <button type="button" @click="open = false"
+                class="absolute top-4 right-4 text-gray-400 hover:text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                  stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
               <DialogTitle class="flex justify-center text-center">发动态</DialogTitle>
               <form class="relative">
                 <div class="overflow-hidden rounded-lg border border-gray-300 shadow-sm">
-                  <textarea rows="2" name="description" id="description"
+                  <textarea rows="2" name="description" id="description" v-model="dynamicContent"
                     class="h-40 block w-full resize-none border-0 py-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm/6"
                     placeholder="一起聊聊音乐吧~" />
 
@@ -126,15 +133,14 @@
                     </Listbox>
                   </div>
                   <div class="flex items-center justify-between space-x-3 border-t border-gray-200 px-2 py-2 sm:px-3">
-                    <div v-if = "selectedSong == null" class="flex">
+                    <div v-if="selectedSong == null" class="flex">
                       <button type="button" @click="showMusicModal = true"
                         class="group -my-2 -ml-2 inline-flex items-center rounded-full px-3 py-2 text-left text-gray-400 h-12">
                         <PaperClipIcon class="-ml-1 mr-2 size-5 group-hover:text-gray-500" aria-hidden="true" />
                         <span class="text-sm italic text-gray-500 group-hover:text-gray-600">给动态配上音乐</span>
                       </button>
                     </div>
-                    <div 
-                    v-else
+                    <div v-else
                       class="relative inline-flex items-center whitespace-nowrap rounded-full bg-gray-50 px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 sm:px-3">
                       <span class="flex items-center justify-center">
                         <img :src="selectedSong.image" alt="Song Cover" class="size-5 shrink-0 mr-2 w-12 h-12" />
@@ -143,20 +149,19 @@
                           <span>{{ selectedSong.artist }}</span>
                         </span>
                       </span>
-                      <button type="button" @click="removeMusic"
-                        class="ml-32">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-</svg>
+                      <button type="button" @click="removeMusic" class="ml-32">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                          stroke="currentColor" class="size-6">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
 
-                        </button>
+                      </button>
                     </div>
                   </div>
                   <div
                     class="flex justify-center text-center space-x-3 border-t border-gray-200 px-2 py-2 sm:px-3 h-11">
                     <div class="flex">
-                      <button type="button"
-                        @click="open = false"
+                      <button type="button" @click="publishDynamic"
                         class="group -my-2 -ml-2 inline-flex items-center rounded-full px-3 py-2 text-left text-gray-400">
                         <span class="text-sm italic text-gray-500 group-hover:text-gray-600">发布</span>
                       </button>
@@ -191,8 +196,8 @@
               <div class="mt-2">
                 <input type="text" v-model="searchQuery" placeholder="搜索歌曲..." class="w-full p-2 border rounded mb-4" />
                 <div class="grid grid-cols-2 gap-4">
-                  <div v-for="song in filteredSongs" :key="song.id" class="border p-2 rounded cursor-pointer flex flex-row"
-                    @click="selectSong(song)">
+                  <div v-for="song in filteredSongs" :key="song.id"
+                    class="border p-2 rounded cursor-pointer flex flex-row" @click="selectSong(song)">
                     <img :src="song.image" alt="Song Cover" class="w-14 h-14 object-cover" />
                     <div class="ml-2">
                       <p class="font-bold">{{ song.title }}</p>
@@ -215,7 +220,7 @@
   </TransitionRoot>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from '@headlessui/vue'
 import { PaperClipIcon, TagIcon } from '@heroicons/vue/20/solid'
@@ -229,7 +234,7 @@ import {
   XMarkIcon,
 } from '@heroicons/vue/20/solid'
 import DynamicsList from '../components/DynamicsList.vue'
-import { computed } from 'vue';
+import axios from 'axios'
 
 const songs = [
   { id: 1, title: 'Song 1', artist: 'Artist 1', image: 'https://via.placeholder.com/150' },
@@ -262,11 +267,52 @@ const labels = [
 ]
 const labelled = ref(labels[0])
 
+const dynamicContent = ref('');
+
 const removeMusic = () => {
+  dynamicContent.value = dynamicContent.value.replace(`🎵 ${selectedSong.value.title} by ${selectedSong.value.artist}\n`, '');
   selectedSong.value = null;
 };
+
 const selectSong = (song) => {
   selectedSong.value = song;
   showMusicModal.value = false;
+};
+
+watch(selected, (newVal) => {
+  if (newVal.value !== null) {
+    dynamicContent.value += `😄 ${newVal.name}\n`;
+  }
+});
+
+watch(labelled, (newVal) => {
+  if (newVal.value !== null) {
+    dynamicContent.value += `🏷️ ${newVal.name}\n`;
+  }
+});
+const publishDynamic = async () => {
+  const data = {
+    content: dynamicContent.value,
+  };
+
+  if (selectedSong.value) {
+    data.musicId = selectedSong.value.id;
+  }
+
+  try {
+    const response = await axios.get('/api/user/addDynamics/', {
+      params: data
+    }); // 使用 axios 发送 POST 请求
+    if (response.status === 200) {
+      console.log('动态发布成功');
+      open.value = false; // 关闭对话框
+      dynamicContent.value = ''; // 清空动态内容
+      selectedSong.value = null; // 清空选中的歌曲
+    } else {
+      console.error('动态发布失败:', response.statusText);
+    }
+  } catch (error) {
+    console.error('请求出错:', error);
+  }
 };
 </script>

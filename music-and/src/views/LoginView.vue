@@ -96,7 +96,7 @@ const handleLogin = async () => {
   try {
     const success = await userStore.login(user.value);
     if (success) {
-      router.push('/home');
+      router.push('/home/index')
     } else {
       alert('Login failed, please check your credentials.');
     }

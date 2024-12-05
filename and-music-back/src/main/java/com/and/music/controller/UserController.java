@@ -2,11 +2,14 @@ package com.and.music.controller;
 
 import com.and.music.common.R;
 import com.and.music.domain.Users;
+import com.and.music.dto.DynamicsDto;
 import com.and.music.mapper.UsersMapper;
+import com.and.music.service.DynamicsService;
 import com.and.music.service.UsersService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -18,21 +21,18 @@ public class UserController {
 
     private final UsersService usersService;
 
-    @GetMapping("/getUserPages")
-    public R getUserPages() {
-        List<Users> users = usersService.list();
-        return new R(true, "success", users, null);
-    }
+    private final DynamicsService dynamicsService;
 
-    @GetMapping("/getUserById")
-    public R getUserById(Integer userId) {
-        Users user = usersService.getById(userId);
-        return new R(true, "success", user, null);
+    // 用户发动态
+    @GetMapping("/addDynamics")
+    public R addDynamics(
+            @RequestParam("content") String content,
+            @RequestParam("musicId") Integer musicId) {
+        return dynamicsService.addDynamics(new DynamicsDto(content, musicId));
     }
-
-    @GetMapping("/deleteUserById")
-    public R deleteUserById(Integer userId) {
-        boolean result = usersService.removeById(userId);
-        return new R(result, result ? "success" : "fail", null, null);
+    // 获取用户动态
+    @GetMapping("/getDynamics")
+    public R getDynamics() {
+        return dynamicsService.getDynamicsList();
     }
 }

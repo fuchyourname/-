@@ -16,10 +16,8 @@ public class FileDto {
     private Integer genreId;
     // 音乐图片
     private MultipartFile musicPic;
-
     // 音频文件
     private MultipartFile musicFile;
-
     // 歌词文件
     private MultipartFile lyricFile;
 }

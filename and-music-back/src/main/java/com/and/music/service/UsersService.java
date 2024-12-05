@@ -6,6 +6,8 @@ import com.and.music.dto.UserDto;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpSession;
+
 /**
 * @author and
 * @description 针对表【users】的数据库操作Service
@@ -13,7 +15,7 @@ import org.springframework.stereotype.Service;
 */
 public interface UsersService extends IService<Users> {
 
-    R checkUser(UserDto userDto);
+    R checkUser(UserDto userDto, HttpSession session);
 
     R register(UserDto userDto);
 }

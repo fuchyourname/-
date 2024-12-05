@@ -3,10 +3,10 @@
   <div class="ml-48">
     <div v-for="post in posts" :key="post.username" class="w-4/5 border-b py-4 border rounded-lg shadow-md">
       <div class="flex items-center ml-4">
-        <img :src="post.avatar" alt="User Avatar" class="w-14 h-14 rounded-full mr-3">
+        <img :src="post.userAvatar" alt="User Avatar" class="w-14 h-14 rounded-full mr-3">
         <div class="flex flex-col">
-          <span class="font-bold">{{ post.username }}</span>
-          <span class="text-sm text-gray-500">{{ getTimeAgo(post.createdAt) }}</span>
+          <span class="font-bold">{{ post.userName }}</span>
+          <span class="text-sm text-gray-500">{{ getTimeAgo(post.createTime) }}</span>
         </div>
       </div>
       <p class="mt-2 ml-16">{{ post.content }}</p>
@@ -27,7 +27,6 @@
             <path stroke-linecap="round" stroke-linejoin="round"
               d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
           </svg>
-
         </button>
       </div>
 
@@ -52,23 +51,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
-const posts = ref([
-  {
-    avatar: 'http://192.168.154.1:9000/music/系统/admin.jpg',
-    username: 'User1',
-    content: '这是一条动态的内容。',
-    file: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg',
-    createdAt: Date.now() - 3600000,
-    song: {
-      coverPath: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg',
-      title: '歌曲名',
-      artist: '歌手名'
-    },
-    showPlayButton: false // 初始化播放按钮状态为隐藏
+const posts = ref([])
+
+const fetchPosts = async () => {
+  try {
+    const response = await axios.get('/api/user/getDynamics') // 替换为你的API端点
+    posts.value = response.data.data
+  } catch (error) {
+    console.error('获取动态列表失败:', error)
   }
-])
+}
+
+onMounted(() => {
+  fetchPosts()
+})
 
 const showPlayButton = (post) => {
   post.showPlayButton = true
@@ -79,8 +78,9 @@ const hidePlayButton = (post) => {
 }
 
 const getTimeAgo = (timestamp) => {
+  const date = new Date(timestamp); // 将ISO 8601字符串转换为Date对象
   const now = new Date().getTime();
-  const secondsPast = (now - timestamp) / 1000;
+  const secondsPast = (now - date.getTime()) / 1000;
 
   if (secondsPast < 60) {
     return `${Math.round(secondsPast)}秒前`;

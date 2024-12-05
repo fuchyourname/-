@@ -2,8 +2,10 @@ package com.and.music.service;
 
 import com.and.music.common.R;
 import com.and.music.domain.Songs;
+import com.and.music.domain.UserSongs;
 import com.and.music.dto.FileDto;
 import com.and.music.dto.SongDto;
+import com.and.music.dto.UserSongDto;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.stereotype.Service;
 
@@ -21,5 +23,5 @@ public interface SongsService extends IService<Songs> {
     public R getSongDetail(Integer songId);
 
     // 用户上传歌曲
-    public R uploadSong(SongDto songDto);
+    public R uploadSong(UserSongDto userSongDto);
 }

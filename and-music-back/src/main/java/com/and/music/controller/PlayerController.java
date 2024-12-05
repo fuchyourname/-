@@ -5,6 +5,7 @@ import com.and.music.common.R;
 import com.and.music.domain.Artists;
 import com.and.music.dto.ArtistDto;
 import com.and.music.service.ArtistsService;
+import com.and.music.service.FollowService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,7 @@ import java.util.List;
 public class PlayerController {
 
     private final ArtistsService artistsService;
+    private final FollowService followService;
 
     // 新增歌手
     @PostMapping("/addPlayer")
@@ -44,5 +46,11 @@ public class PlayerController {
     @PostMapping("/getPlayers")
     public R getPlayers(@RequestBody ArtistDto artistDto) {
         return artistsService.getArtists(artistDto);
+    }
+
+    // 获取关注的歌手
+    @GetMapping("/getFollowSinger")
+    public R getFollowSinger() {
+        return followService.getSingerList();
     }
 }

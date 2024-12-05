@@ -1,4 +1,5 @@
-package com.and.music.dto;
+package com.and.music.vo;
+
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -11,10 +12,13 @@ import java.util.Date;
 
 @Data
 @Accessors(chain = true)
-public class GenreDto {
+public class DynamicsVo {
 
-    private String name;
-    private String description;
-    // 1-歌曲 2-歌手 3-歌单
-    private Integer type;
+    private Integer dynamicId;
+    private String userName;
+    private String userAvatar;
+    private String content;
+    private SongVo song;
+    private Date createTime;
+
 }

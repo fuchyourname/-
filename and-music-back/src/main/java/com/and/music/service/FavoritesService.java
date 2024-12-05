@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 public interface FavoritesService extends IService<Favorites> {
 
     // 收藏歌单
-    public R addFavorites(Integer playlistId, Integer userId);
+    public R addFavorites(Integer playlistId);
 
     // 取消收藏歌单
-    public R removeFavorites(Integer playlistId, Integer userId);
+    public R removeFavorites(Integer playlistId);
 }

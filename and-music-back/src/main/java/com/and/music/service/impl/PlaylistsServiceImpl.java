@@ -10,6 +10,7 @@ import com.and.music.utils.MinioUtils;
 import com.and.music.utils.UserContext;
 import com.and.music.vo.PlaylistVo;
 import com.and.music.vo.SongVo;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -18,18 +19,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
-* @author and
-* @description 针对表【playlists】的数据库操作Service实现
-* @createDate 2024-10-14 15:31:30
-*/
+ * @author and
+ * @description 针对表【playlists】的数据库操作Service实现
+ * @createDate 2024-10-14 15:31:30
+ */
 @Service
 public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists>
-    implements PlaylistsService {
+        implements PlaylistsService {
     @Resource
     private UsersMapper usersMapper;
     @Resource
@@ -42,6 +44,8 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
     private SongsMapper songsMapper;
     @Resource
     private PlaylistSongsMapper playlistSongsMapper;
+    @Resource
+    private FavoritesMapper favoritesMapper;
 
     @Override
     @Transactional
@@ -96,12 +100,6 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
 
         return R.ok();
     }
-
-    @Override
-    public R getSongs(Integer playlistId) {
-        return null;
-    }
-
     @Override
     public R getRecommendPlaylists() {
         /**
@@ -123,12 +121,12 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
         List<Users> usersList = usersMapper.selectBatchIds(userIds);
 
         List<PlaylistVo> playlistVoList = playlistsList.stream().map(playlists -> {
-           return new PlaylistVo()
-                   .setPlaylistId(playlists.getPlaylistId())
-                   .setUserName(usersList.stream().filter(users -> users.getUserId().equals(playlists.getUserId())).findFirst().get().getUserName())
-                   .setName(playlists.getName())
-                   .setDescription(playlists.getDescription())
-                   .setImageUrl(playlists.getImageUrl());
+            return new PlaylistVo()
+                    .setPlaylistId(playlists.getPlaylistId())
+                    .setUserName(usersList.stream().filter(users -> users.getUserId().equals(playlists.getUserId())).findFirst().get().getUserName())
+                    .setName(playlists.getName())
+                    .setDescription(playlists.getDescription())
+                    .setImageUrl(playlists.getImageUrl());
         }).collect(Collectors.toList());
 
         return R.ok(playlistVoList);
@@ -188,7 +186,101 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
 
     @Override
     public R getPlaylistsByType(Integer type) {
-        return null;
+
+        if (ObjectUtil.isEmpty(type)) {
+            return R.fail("参数错误");
+        }
+
+        List<Playlists> playlistsList = this.list(new QueryWrapper<Playlists>().eq("type", type));
+
+        if (ObjectUtil.isEmpty(playlistsList)) {
+            return R.ok("暂无该类型的歌单");
+        }
+
+        List<PlaylistVo> playlistVoList = playlistsList.stream().map(playlists -> {
+            return new PlaylistVo()
+                    .setPlaylistId(playlists.getPlaylistId())
+                    .setName(playlists.getName())
+                    .setDescription(playlists.getDescription())
+                    .setImageUrl(playlists.getImageUrl());
+        }).collect(Collectors.toList());
+
+        List<Integer> userIds = playlistsList.stream().
+                map(Playlists::getUserId).collect(Collectors.toList());
+
+        if (ObjectUtil.isEmpty(userIds)) {
+            return R.ok(playlistVoList);
+        }
+
+        List<Users> usersList = usersMapper.selectBatchIds(userIds);
+
+        playlistVoList.forEach(playlistVo -> {
+            usersList.stream().filter(users -> users.getUserId().equals(playlistVo.getPlaylistId())).findFirst().ifPresent(users -> {
+                playlistVo.setUserName(users.getUserName());
+                playlistVo.setUserAvatar(users.getPicUrl());
+            });
+        });
+
+        return R.ok(playlistVoList);
+    }
+
+    @Override
+    public R getUserPlaylists() {
+
+        LambdaQueryWrapper<Playlists> queryWrapper = new LambdaQueryWrapper<Playlists>()
+                .eq(Playlists::getUserId, UserContext.getUser().getUserId());
+        List<Playlists> playlistsList = this.list(queryWrapper);
+
+        if (ObjectUtil.isEmpty(playlistsList)) {
+            return R.ok();
+        }
+        List<PlaylistVo> playlistVoList = playlistsList.stream().map(playlists -> {
+            return new PlaylistVo()
+                    .setPlaylistId(playlists.getPlaylistId())
+                    .setName(playlists.getName())
+                    .setDescription(playlists.getDescription())
+                    .setImageUrl(playlists.getImageUrl());
+        }).collect(Collectors.toList());
+
+        return R.ok(playlistVoList);
+    }
+
+    @Override
+    public R getUserFavorites() {
+
+        LambdaQueryWrapper<Favorites> queryWrapper = new LambdaQueryWrapper<Favorites>()
+                .eq(Favorites::getUserId, UserContext.getUser().getUserId())
+                .eq(Favorites::getType, 2);
+
+        List<Favorites> favoritesList = favoritesMapper.selectList(queryWrapper);
+
+        if (ObjectUtil.isEmpty(favoritesList)) {
+            return R.ok();
+        }
+
+        List<Integer> playlistIds = favoritesList.stream().
+                map(Favorites::getContentId).collect(Collectors.toList());
+
+        if (ObjectUtil.isEmpty(playlistIds)) {
+            return R.ok();
+        }
+
+        List<Playlists> playlistsList = this.list(
+                new QueryWrapper<Playlists>().in("playlist_id", playlistIds));
+
+        if (ObjectUtil.isEmpty(playlistsList)) {
+            return R.ok();
+        }
+
+        List<PlaylistVo> playlistVoList = playlistsList.stream().map(playlists -> {
+            return new PlaylistVo()
+                    .setPlaylistId(playlists.getPlaylistId())
+                    .setName(playlists.getName())
+                    .setDescription(playlists.getDescription())
+                    .setImageUrl(playlists.getImageUrl());
+        }).collect(Collectors.toList());
+
+        return R.ok(playlistVoList);
     }
 }
 

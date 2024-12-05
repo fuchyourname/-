@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white">
-    <div class="ml-32 max-w-2xl px-4 py-4 sm:px-6 sm:py-4">
+    <div class="ml-32 px-4 py-4 sm:px-6 sm:py-4">
       <!-- 图片和文字在同一行 -->
       <div class="flex mb-8">
         <img class="inline-block h-40 w-40 rounded-md mr-4" :src="playlist.imageUrl" alt="" />
@@ -29,17 +29,20 @@
                 <table class="min-w-full divide-y divide-gray-300">
                   <thead>
                     <tr>
-                      <th scope="col" class="py-2 pl-4 pr-3 text-left text-xs font-semibold text-gray-500 sm:pl-3">序号</th>
-                      <th scope="col" class="py-2 pl-4 pr-3 text-left text-xs font-semibold text-gray-500 sm:pl-3">歌曲信息</th>
-                      <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500">专辑</th>
-                      <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500">喜欢</th>
-                      <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500">时长</th>
+                      <th scope="col"
+                        class="py-2 pl-4 pr-3 text-left text-xs font-semibold text-gray-500 sm:pl-3 w-1/3">歌曲信息</th>
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-1/6">喜欢</th>
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-1/10"></th>
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-1/4">专辑</th>
+
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-1/6">时长</th>
                     </tr>
                   </thead>
                   <tbody class="bg-white">
                     <tr v-for="(song, index) in songs" :key="song.songId" class="even:bg-gray-50 cursor-pointer"
-                      @click="handleSongClick(song)">
-                      <td class="whitespace-nowrap py-2 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">{{ index + 1 }}</td>
+                      @mouseenter="hoveredIndex = index" @mouseleave="hoveredIndex = -1"
+                      @click="handleSongClick(song)"
+                      :class="{ 'bg-gray-100': hoveredIndex === index }">
                       <td class="whitespace-nowrap py-2 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
                         <div class="flex items-center">
                           <img class="inline-block h-10 w-10 rounded-md mr-2" :src="song.coverPath" alt="" />
@@ -49,15 +52,25 @@
                           </div>
                         </div>
                       </td>
-                      <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-500">{{ song.album }}</td>
-                      <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-500 pl-2">
+                      <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-500 pl-2 w-1/6">
                         <svg xmlns="http://www.w3.org/2000/svg" :fill="true ? 'red' : 'none'" viewBox="0 0 24 24"
                           stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                           <path stroke-linecap="round" stroke-linejoin="round"
                             d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
                         </svg>
                       </td>
-                      <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-500">{{ song.time }}</td>
+                      <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-500 relative w-1/10 text-left">
+                        <svg v-if="hoveredIndex === index" xmlns="http://www.w3.org/2000/svg" fill="none"
+                          viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 10.5v6m3-3H9m4.06-7.19-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+                        </svg>
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-500 relative w-1/4">
+                        {{ song.album }}
+                      </td>
+
+                      <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-500 w-1/6">{{ song.time }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -83,10 +96,11 @@ const playlist = ref({})
 const selectedButton = ref('song')
 const playlistId = ref(route.params.id)
 const songs = ref([])
+const hoveredIndex = ref(-1)
 
 const fetchPlaylistData = async () => {
   try {
-    const response = await axios.get("http://localhost:8080/playList/getPlaylistDetail", {
+    const response = await axios.get("/api/playList/getPlaylistDetail", {
       params: {
         playlistId: playlistId.value
       }
@@ -127,3 +141,42 @@ const handleComment = () => {
   // router.push(`/home/songlistdetails/${playlistId}/comment`)
 }
 </script>
+
+<style scoped>
+/* 去掉之前的宽度设置 */
+/* 增加自定义宽度 */
+table th,
+table td {
+  padding: 8px;
+}
+
+table th:first-child,
+table td:first-child {
+  width: 33.33%;
+}
+
+table th:nth-child(2),
+table td:nth-child(2) {
+  width: 10%;
+}
+
+table th:nth-child(3),
+table td:nth-child(3) {
+  width: 10%;
+}
+
+table th:nth-child(4),
+table td:nth-child(4) {
+  width: 25%;
+}
+
+table th:last-child,
+table td:last-child {
+  width: 16.67%;
+}
+
+/* 鼠标悬停时改变背景颜色 */
+tr:hover {
+  background-color: #f1f5f9;
+}
+</style>

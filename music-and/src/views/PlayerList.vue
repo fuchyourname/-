@@ -84,7 +84,7 @@ const updateParams = () => {
 };
 
 const fetchArtists = () => {
-  axios.post('http://127.0.0.1:8080/player/getPlayers', params.value)
+  axios.post('/api/player/getPlayers', params.value)
     .then(response => {
       artists.value = response.data.data;
     })

@@ -78,7 +78,7 @@
                   <a href="#" :class="[active ? 'bg-gray-100 outline-none' : '', 'block px-4 py-2 text-sm text-gray-700']">设置</a>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
-                  <a href="#" :class="[active ? 'bg-gray-100 outline-none' : '', 'block px-4 py-2 text-sm text-gray-700']">登出</a>
+                  <a @click = "logout" :class="[active ? 'bg-gray-100 outline-none' : '', 'block px-4 py-2 text-sm text-gray-700']">登出</a>
                 </MenuItem>
               </MenuItems>
             </transition>
@@ -127,8 +127,9 @@ const userStore = useUserStore();
 // 计算属性来获取 user 信息
 const user = computed(() => userStore.user);
 
-const openSearchDialog = () => {
-  searchVisible.value = true
+const logout = () => {
+  userStore.logout();
+  router.push('/login');
 }
 
 const closeSearchDialog = () => {
@@ -140,15 +141,11 @@ const products = [
   { name: '歌手', description: 'Speak directly to your customers', href: '/home/player', icon: CursorArrowRaysIcon },
   { name: '分类歌单', description: 'Your customers’ data will be safe and secure', href: '/home/category', icon: FingerPrintIcon },
   { name: '排行', description: 'Connect with third-party tools', href: '#', icon: SquaresPlusIcon },
-  { name: 'Automations', description: 'Build strategic funnels that will convert', href: '#', icon: ArrowPathIcon },
+  { name: '专辑', description: 'Build strategic funnels that will convert', href: '#', icon: ArrowPathIcon },
 ]
 const callsToAction = [
   { name: 'Watch demo', href: '#', icon: PlayCircleIcon },
   { name: 'Contact sales', href: '#', icon: PhoneIcon },
 ]
-const mobileMenuOpen = ref(false)
 const router = useRouter();
-onMounted(() => {
-  router.push('/home/index')
-});
 </script>

@@ -23,7 +23,7 @@ export const useMusicStore = defineStore('music', {
     },
     async fetchPlaylistSongs() {
       try {
-        const response = await axios.get('http://127.0.0.1:8080/playList/getPlaylistDetail', {
+        const response = await axios.get('/api/playList/getPlaylistDetail', {
           params: {
             playlistId: this.currentPlaylistId,
           },
@@ -35,7 +35,7 @@ export const useMusicStore = defineStore('music', {
     },
     async fetchSong(id) {
       try {
-        const response = await axios.get('http://127.0.0.1:8080/music/getSongDetail', {
+        const response = await axios.get('/api/music/getSongDetail', {
           params: {
             songId: id,
           },

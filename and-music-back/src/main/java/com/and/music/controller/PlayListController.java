@@ -20,6 +20,11 @@ public class PlayListController {
 
     private final PlaylistsService playlistsService;
 
+    // 根据类型获取歌单
+    @GetMapping("/getPlayListByType")
+    public R getPlayListByType(@RequestParam("type") Integer type) {
+        return playlistsService.getPlaylistsByType(type);
+    }
     // 获取推荐歌单
     @GetMapping("/getRecommendPlayList")
     public R getRecommendPlayList() {
@@ -47,5 +52,15 @@ public class PlayListController {
     @GetMapping("/getPlaylistDetail")
     public R getPlaylistDetail(@RequestParam("playlistId") Integer playlistId) {
         return playlistsService.getPlaylistDetail(playlistId);
+    }
+    // 获取用户创建的歌单
+    @GetMapping("/getUserPlaylists")
+    public R getUserPlaylists() {
+        return playlistsService.getUserPlaylists();
+    }
+    // 获取用户收藏的歌单
+    @GetMapping("/getUserFavorites")
+    public R getUserFavorites() {
+        return playlistsService.getUserFavorites();
     }
 }
