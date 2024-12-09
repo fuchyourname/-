@@ -140,7 +140,7 @@ const products = [
   { name: '首页', description: 'Get a better understanding of your traffic', href: '/home/index', icon: ChartPieIcon },
   { name: '歌手', description: 'Speak directly to your customers', href: '/home/player', icon: CursorArrowRaysIcon },
   { name: '分类歌单', description: 'Your customers’ data will be safe and secure', href: '/home/category', icon: FingerPrintIcon },
-  { name: '排行', description: 'Connect with third-party tools', href: '#', icon: SquaresPlusIcon },
+  { name: '排行榜', description: 'Connect with third-party tools', href: '#', icon: SquaresPlusIcon },
   { name: '专辑', description: 'Build strategic funnels that will convert', href: '#', icon: ArrowPathIcon },
 ]
 const callsToAction = [

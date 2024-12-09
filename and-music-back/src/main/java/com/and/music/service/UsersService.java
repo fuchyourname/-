@@ -18,4 +18,7 @@ public interface UsersService extends IService<Users> {
     R checkUser(UserDto userDto, HttpSession session);
 
     R register(UserDto userDto);
+
+    // 根据用户名查询用户
+    R getUserByName(String userName);
 }

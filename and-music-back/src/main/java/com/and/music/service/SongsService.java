@@ -9,6 +9,8 @@ import com.and.music.dto.UserSongDto;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
 * @author and
 * @description 针对表【songs】的数据库操作Service
@@ -17,11 +19,32 @@ import org.springframework.stereotype.Service;
 public interface SongsService extends IService<Songs> {
 
     // 上传歌曲
-    public R upload(FileDto fileDto);
+    R upload(FileDto fileDto);
 
     // 获取歌曲详情
-    public R getSongDetail(Integer songId);
+    R getSongDetail(Integer songId);
 
     // 用户上传歌曲
-    public R uploadSong(UserSongDto userSongDto);
+    R uploadSong(UserSongDto userSongDto);
+
+    // 根据歌曲名进行模糊查询
+    R getSongByName(String songName);
+
+    List<Songs> calculateHotSongs();
+
+    List<Songs> calculateNewSongs();
+
+    void cacheHotSongs(List<Songs> hotSongs);
+
+    void cacheNewSongs(List<Songs> newSongs);
+
+    List<Songs> getHotSongsFromCache();
+
+    List<Songs> getNewSongsFromCache();
+
+    // 增加歌单的播放次数
+    R addPlayCount(Integer songId);
+
+    // 保存歌单的播放次数
+    void savePlayCount(Integer songId);
 }

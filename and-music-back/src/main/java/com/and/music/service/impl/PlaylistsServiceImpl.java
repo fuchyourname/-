@@ -13,6 +13,8 @@ import com.and.music.vo.SongVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,6 +48,8 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
     private PlaylistSongsMapper playlistSongsMapper;
     @Resource
     private FavoritesMapper favoritesMapper;
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     @Transactional
@@ -281,6 +285,36 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
         }).collect(Collectors.toList());
 
         return R.ok(playlistVoList);
+    }
+
+    @Override
+    public R getPlaylistsByName(String playlistName) {
+        return null;
+    }
+
+    @Override
+    public R addPlayCount(Integer playlistId) {
+
+        if (ObjectUtil.isEmpty(playlistId)) {
+            return R.fail("参数错误");
+        }
+        redisTemplate.opsForHash().increment("PlayListPlayCount", playlistId.toString(), 1);
+        return R.ok();
+    }
+
+    @Override
+    public void savePlayCount(Integer playlistId) {
+
+        if (ObjectUtil.isEmpty(playlistId)) {
+            return;
+        }
+        Playlists playlists = this.getById(playlistId);
+        if (ObjectUtil.isNotEmpty(playlists)) {
+            // 在原有的基础上新增redis中的值
+            playlists.setPlayCount(playlists.getPlayCount() +
+                    Long.parseLong(redisTemplate.opsForHash().get("PlayListPlayCount", playlistId.toString()).toString()));
+            this.baseMapper.updateById(playlists);
+        }
     }
 }
 

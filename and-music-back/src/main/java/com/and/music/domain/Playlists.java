@@ -37,6 +37,8 @@ public class Playlists implements Serializable {
 
     private Integer songCount;
 
+    private Long playCount;
+
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 

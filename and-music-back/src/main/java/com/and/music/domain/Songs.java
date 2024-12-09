@@ -33,7 +33,9 @@ public class Songs implements Serializable {
 
     private Integer genreId;
 
-    private Integer duration;
+    private String duration;
+
+    private Long playCount;
 
     private String coverPath;
 

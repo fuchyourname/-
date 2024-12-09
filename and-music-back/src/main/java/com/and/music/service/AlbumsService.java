@@ -19,4 +19,10 @@ public interface AlbumsService extends IService<Albums> {
     R getAlbumList(Integer userId);
     // 获取专辑详情
     R getAlbumDetail(Integer albumId);
+    // 根据专辑名搜索专辑
+    R getAlbumByName(String albumName);
+    // 增加专辑播放次数
+    R addPlayCount(Integer albumId);
+    // 保存专辑播放次数
+    void savePlayCount(Integer albumId);
 }

@@ -33,7 +33,6 @@ const router = useRouter()
 const searchQuery = ref(route.params.query)
 
 const tabs = ref([
-  { name: '综合', href: `#`, icon: CreditCardIcon, current: false },
   { name: '单曲', href: `#`, icon: SpeakerWaveIcon, current: false }, // 替换 MusicNoteIcon 为 SpeakerWaveIcon
   { name: '歌单', href: `#`, icon: FolderIcon, current: false },
   { name: '歌手', href: `#`, icon: UsersIcon, current: true },

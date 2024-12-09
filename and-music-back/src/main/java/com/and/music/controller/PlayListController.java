@@ -20,6 +20,11 @@ public class PlayListController {
 
     private final PlaylistsService playlistsService;
 
+    // 添加歌单播放量
+    @PostMapping("/addPlayCount")
+    public R addPlayCount(@RequestParam("playlistId") Integer playlistId) {
+        return playlistsService.addPlayCount(playlistId);
+    }
     // 根据类型获取歌单
     @GetMapping("/getPlayListByType")
     public R getPlayListByType(@RequestParam("type") Integer type) {

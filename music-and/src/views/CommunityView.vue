@@ -39,9 +39,9 @@
               <DialogTitle class="flex justify-center text-center">发动态</DialogTitle>
               <form class="relative">
                 <div class="overflow-hidden rounded-lg border border-gray-300 shadow-sm">
-                  <textarea rows="2" name="description" id="description" v-model="dynamicContent"
-                    class="h-40 block w-full resize-none border-0 py-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm/6"
-                    placeholder="一起聊聊音乐吧~" />
+                <textarea rows="2" name="description" id="description" v-html="dynamicContent"
+          class="h-40 block w-full resize-none border-0 py-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm/6"
+          placeholder="一起聊聊音乐吧~"></textarea>
 
                   <!-- Spacer element to match the height of the toolbar -->
                   <div>
@@ -281,13 +281,13 @@ const selectSong = (song) => {
 
 watch(selected, (newVal) => {
   if (newVal.value !== null) {
-    dynamicContent.value += `😄 ${newVal.name}\n`;
+    dynamicContent.value += `<span class="mood">${newVal.name} ${newVal.icon.outerHTML}</span>\n`;
   }
 });
 
 watch(labelled, (newVal) => {
   if (newVal.value !== null) {
-    dynamicContent.value += `🏷️ ${newVal.name}\n`;
+    dynamicContent.value += ` <span class="label">#${newVal.name}#</span>`;
   }
 });
 const publishDynamic = async () => {
@@ -316,3 +316,13 @@ const publishDynamic = async () => {
   }
 };
 </script>
+<style scoped>
+.mood {
+  color: #ff6347; /* 橙色 */
+}
+
+.label {
+  color: #4caf50; /* 绿色 */
+  font-weight: bold;
+}
+</style>

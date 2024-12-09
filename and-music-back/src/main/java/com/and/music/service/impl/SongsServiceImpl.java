@@ -19,11 +19,21 @@ import com.and.music.service.UsersService;
 import com.and.music.utils.MinioUtils;
 import com.and.music.utils.PathUtils;
 import com.and.music.vo.SongVo;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.PumpStreamHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author and
@@ -42,6 +52,69 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
     private AlbumsMapper albumsMapper;
     @Resource
     private MinioProperties minioAutoProperties;
+    @Resource
+    private RedisTemplate<String, Songs> redisTemplate;
+
+    @Override
+    public List<Songs> calculateHotSongs() {
+        // 热歌榜根据播放次数排序
+        LambdaQueryWrapper<Songs> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByDesc(Songs::getPlayCount).last("LIMIT 10");
+        return list(queryWrapper);
+    }
+
+    @Override
+    public List<Songs> calculateNewSongs() {
+        // 新歌榜根据发布时间排序
+        LambdaQueryWrapper<Songs> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByDesc(Songs::getCreateTime).last("LIMIT 10");
+        return list(queryWrapper);
+    }
+
+    @Override
+    public void cacheHotSongs(List<Songs> hotSongs) {
+        redisTemplate.opsForList().rightPushAll("hot_songs", hotSongs);
+    }
+
+    @Override
+    public void cacheNewSongs(List<Songs> newSongs) {
+        redisTemplate.opsForList().rightPushAll("new_songs", newSongs);
+    }
+
+    @Override
+    public List<Songs> getHotSongsFromCache() {
+        return redisTemplate.opsForList().range("hot_songs", 0, -1);
+    }
+
+    @Override
+    public List<Songs> getNewSongsFromCache() {
+        return redisTemplate.opsForList().range("new_songs", 0, -1);
+    }
+
+    @Override
+    public R addPlayCount(Integer songId) {
+
+        if (ObjectUtil.isEmpty(songId)) {
+            return R.fail("参数错误");
+        }
+        redisTemplate.opsForHash().increment("SongPlayCount", songId.toString(), 1);
+        return R.ok();
+    }
+
+    @Override
+    public void savePlayCount(Integer songId) {
+
+        if (ObjectUtil.isEmpty(songId)) {
+            return;
+        }
+        Songs song = getById(songId);
+        if (ObjectUtil.isNotEmpty(song)) {
+            // 在原有的基础上新增redis中的值
+            song.setPlayCount(song.getPlayCount() +
+                    Long.parseLong(redisTemplate.opsForHash().get("SongPlayCount", songId.toString()).toString()));
+            this.baseMapper.updateById(song);
+        }
+    }
 
     @Override
     @Transactional
@@ -65,6 +138,10 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
                 String musicUrl = minioUtils.putObject(minioAutoProperties.getBucket(),
                         objectPath, fileDto.getMusicFile());
                 songs.setFilePath(musicUrl);
+
+                // 获取音乐文件的时长
+                String duration = getMusicDuration(fileDto.getMusicFile().getOriginalFilename(), fileDto.getMusicFile().getBytes());
+                songs.setDuration(duration);
             }
 
             if (fileDto.getMusicPic() != null) {
@@ -85,7 +162,6 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
                 songs.setLyricPath(lyricUrl);
             }
 
-
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("上传失败");
@@ -93,6 +169,7 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
         this.baseMapper.updateById(songs);
         return R.ok();
     }
+
     @Override
     public R getSongDetail(Integer songId) {
 
@@ -112,7 +189,8 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
                 .setTitle(songs.getTitle())
                 .setCoverPath(songs.getCoverPath())
                 .setFilePath(songs.getFilePath())
-                .setLyricPath(songs.getLyricPath());
+                .setLyricPath(songs.getLyricPath())
+                .setDuration(songs.getDuration()); // 添加时长到SongVo
 
         if (ObjectUtil.isNotEmpty(songs.getArtistId())) {
             Artists artists = artistsMapper.selectById(songs.getArtistId());
@@ -141,8 +219,62 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
         // 获取文件的类型、大小、文件名
         return null;
     }
+
+    @Override
+    public R getSongByName(String songName) {
+        return null;
+    }
+
+    /**
+     * 获取音乐文件的时长
+     *
+     * @param fileName  文件名
+     * @param fileBytes 文件字节数组
+     * @return 音乐文件的时长（秒）
+     */
+    private String getMusicDuration(String fileName, byte[] fileBytes) {
+        // 创建临时文件
+        java.io.File tempFile = null;
+        try {
+            tempFile = java.io.File.createTempFile("temp", fileName.substring(fileName.lastIndexOf(".")));
+            java.nio.file.Files.write(tempFile.toPath(), fileBytes);
+
+            CommandLine cmdLine = CommandLine.parse("ffmpeg -i " + tempFile.getAbsolutePath() + " -f null -");
+            DefaultExecutor executor = new DefaultExecutor();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
+            executor.setStreamHandler(streamHandler);
+
+            int exitValue = executor.execute(cmdLine);
+            if (exitValue == 0) {
+                String output = outputStream.toString();
+                String[] lines = output.split("\n");
+                for (String line : lines) {
+                    if (line.contains("Duration")) {
+                        String durationStr = line.split("Duration: ")[1].split(",")[0];
+                        String[] parts = durationStr.split(":");
+                        int hours = Integer.parseInt(parts[0]);
+                        int minutes = Integer.parseInt(parts[1]);
+                        double seconds = Double.parseDouble(parts[2].replace(",", "."));
+
+                        // 格式化时长为 mm:ss 或 HH:mm:ss
+                        if (hours > 0) {
+                            return String.format("%02d:%02d:%02d", hours, minutes, (int) seconds);
+                        } else {
+                            return String.format("%02d:%02d", minutes, (int) seconds);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            log.error("Error executing FFmpeg command", e);
+        } finally {
+            if (tempFile != null) {
+                tempFile.delete(); // 删除临时文件
+            }
+        }
+
+        return "-1"; // 返回"-1"表示获取时长失败
+    }
+
 }
-
-
-
-

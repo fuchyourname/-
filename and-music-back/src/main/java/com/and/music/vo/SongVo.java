@@ -21,6 +21,8 @@ public class SongVo {
 
     private String album;
 
+    private String duration;
+
     private String coverPath;
 
     private String filePath;

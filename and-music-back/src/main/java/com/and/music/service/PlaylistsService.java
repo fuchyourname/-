@@ -25,4 +25,10 @@ public interface PlaylistsService extends IService<Playlists> {
     public R getUserPlaylists();
     // 获取用户收藏的歌单列表
     public R getUserFavorites();
+    // 根据歌单名进行模糊查询
+    public R getPlaylistsByName(String playlistName);
+    // 增加歌单的播放次数
+    R addPlayCount(Integer playlistId);
+    // 保存歌单的播放次数
+    void savePlayCount(Integer playlistId);
 }

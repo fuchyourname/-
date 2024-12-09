@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white">
-    <div class="ml-32 px-4 py-4 sm:px-6 sm:py-4">
+    <div class="px-4 py-4 sm:px-6 sm:py-4 mb-24">
       <!-- 图片和文字在同一行 -->
       <div class="flex mb-8">
         <img class="inline-block h-40 w-40 rounded-md mr-4" :src="playlist.imageUrl" alt="" />

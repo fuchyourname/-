@@ -62,6 +62,11 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         }
         return R.fail("注册失败");
     }
+
+    @Override
+    public R getUserByName(String userName) {
+        return null;
+    }
 }
 
 

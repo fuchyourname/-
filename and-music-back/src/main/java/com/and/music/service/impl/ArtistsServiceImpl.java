@@ -119,6 +119,11 @@ public class ArtistsServiceImpl extends ServiceImpl<ArtistsMapper, Artists>
         }
         return R.ok(list(queryWrapper), count(queryWrapper));
     }
+
+    @Override
+    public R getArtistByName(String artistName) {
+        return null;
+    }
 }
 
 
