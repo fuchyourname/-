@@ -16,4 +16,13 @@ public class UserVo {
     private String email;
 
     private String description;
+
+    private Boolean isAdmin;
+
+    // 关注数
+    private Long followCount;
+    // 粉丝数
+    private Long fansCount;
+    // 国籍
+    private String nationality;
 }

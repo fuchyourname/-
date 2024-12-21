@@ -22,7 +22,7 @@ public class UserSongs {
     private Integer album;
     private Integer createUser;
     private Double size;
-    private Integer type;
+    private String type;
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
     private Integer updateUser;

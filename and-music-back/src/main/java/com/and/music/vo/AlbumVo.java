@@ -14,6 +14,7 @@ import java.util.List;
 @Accessors(chain = true)
 public class AlbumVo {
 
+    private Integer albumId;
     private String title;
 
     private String artist;
@@ -25,6 +26,8 @@ public class AlbumVo {
     private String createUser;
 
     private Date createTime;
+
+    private String type;
 
     private List<SongVo> songs;
 

@@ -2,6 +2,7 @@ package com.and.music.job;
 
 import com.and.music.domain.Songs;
 import com.and.music.service.SongsService;
+import com.and.music.vo.SongVo;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -23,11 +24,11 @@ public class HotAndNewSongsJob implements Job {
         logger.info("开始计算热歌榜和新歌榜...");
 
         // 计算热歌榜
-        List<Songs> hotSongs = songsService.calculateHotSongs();
+        List<SongVo> hotSongs = songsService.calculateHotSongs();
         logger.info("热歌榜计算完成，共 {} 首歌曲", hotSongs.size());
 
         // 计算新歌榜
-        List<Songs> newSongs = songsService.calculateNewSongs();
+        List<SongVo> newSongs = songsService.calculateNewSongs();
         logger.info("新歌榜计算完成，共 {} 首歌曲", newSongs.size());
 
         // 将结果存储或缓存

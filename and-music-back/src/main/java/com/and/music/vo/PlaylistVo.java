@@ -20,5 +20,8 @@ public class PlaylistVo {
     private String name;
     private String description;
     private String imageUrl;
+    private String type;
+    private Integer songCount;
+    private Long playCount;
     private List<SongVo> songs;
 }

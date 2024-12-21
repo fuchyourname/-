@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -103,6 +104,7 @@ public class DynamicsServiceImpl extends ServiceImpl<DynamicsMapper, Dynamics>
                     .setUserAvatar(usersList.stream().filter(users -> users.getUserId().equals(dynamics.getUserId())).findFirst().get().getPicUrl())
                     .setContent(dynamics.getContent())
                     .setSong(songsMap.get(dynamics.getMusicId()))
+                    .setComments(new ArrayList<>())
                     .setCreateTime(dynamics.getCreateTime());
         }).collect(Collectors.toList());
 

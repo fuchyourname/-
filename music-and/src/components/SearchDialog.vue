@@ -1,6 +1,6 @@
 <template>
-  <TransitionRoot :show="open" as="template" @after-leave="query = ''" appear>
-    <Dialog class="relative z-10" @close="open = false">
+    <TransitionRoot :show="open" as="template" @after-leave="query = ''" appear>
+      <Dialog class="relative z-10" @close="$emit('close')">
       <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100" leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
         <div class="fixed inset-0 bg-gray-500/25 transition-opacity" />
       </TransitionChild>
@@ -38,7 +38,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router' // 引入 useRouter
+import { useRouter } from 'vue-router'
 import { MagnifyingGlassIcon } from '@heroicons/vue/20/solid'
 import {
   Combobox,
@@ -51,12 +51,7 @@ import {
   TransitionRoot,
 } from '@headlessui/vue'
 
-const people = [
-  { id: 1, name: 'Leslie Alexander', url: '#' },
-  { id: 2, name: 'Emma Johnson', url: '#' },
-  { id: 3, name: 'Michael Brown', url: '#' },
-  // More people...
-]
+const people = []
 
 const open = ref(true)
 const query = ref('')
@@ -74,23 +69,22 @@ function onSelect(person) {
   }
 }
 
-// 高亮匹配的文本
 function highlightMatch(text) {
   const regex = new RegExp(`(${query.value})`, 'gi')
   return text.replace(regex, '<strong>$1</strong>')
 }
 
-// 处理回车键事件
 const router = useRouter()
 function handleEnter() {
   if (query.value) {
-    router.push({ name: 'serachRes', params: { query: query.value } })
+    router.push({ name: 'serachRes', params: { keyword: query.value } })
+    open.value = false // 添加这行代码以关闭弹窗
   }
 }
 </script>
 
 <style scoped>
 strong {
-  color: blue; /* 或者其他颜色 */
+  color: blue;
 }
 </style>

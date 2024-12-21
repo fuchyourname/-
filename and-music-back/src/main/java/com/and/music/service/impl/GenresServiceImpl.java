@@ -1,17 +1,23 @@
 package com.and.music.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.and.music.common.CommonConstants;
 import com.and.music.common.R;
 import com.and.music.domain.Genres;
 import com.and.music.dto.GenreDto;
+import com.and.music.dto.PageInfo;
 import com.and.music.mapper.GenresMapper;
 import com.and.music.service.GenresService;
 import com.and.music.utils.UserContext;
+import com.and.music.vo.GenreVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
 * @author and
@@ -57,8 +63,29 @@ public class GenresServiceImpl extends ServiceImpl<GenresMapper, Genres>
 
         return R.ok(genresList);
     }
-}
 
+    @Override
+    public R getGenresPage(PageInfo pageInfo) {
+
+        LambdaQueryWrapper<Genres> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(ObjectUtil.isNotEmpty(pageInfo.getName()), Genres::getName, pageInfo.getName())
+                .eq(ObjectUtil.isNotEmpty(pageInfo.getType()), Genres::getType, pageInfo.getType())
+                .orderByDesc(Genres::getCreateTime);
+
+        Page<Genres> page = new Page<>(pageInfo.getPageNum(), pageInfo.getPageSize());
+
+        page(page, wrapper);
+
+        List<GenreVo> genreVoList = page.getRecords().stream().map(genres -> {
+            return new GenreVo()
+                    .setGenreId(genres.getGenreId())
+                    .setName(genres.getName())
+                    .setDescription(genres.getDescription())
+                    .setType(CommonConstants.GENRES_MAP.get(genres.getType()));
+        }).collect(Collectors.toList());
+        return R.ok(genreVoList, page.getTotal());
+    }
+}
 
 
 

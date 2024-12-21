@@ -15,6 +15,8 @@ import java.util.List;
 @Accessors(chain = true)
 public class PlaylistDto {
 
+    private Integer playlistId;
+
     private String name;
 
     private String description;

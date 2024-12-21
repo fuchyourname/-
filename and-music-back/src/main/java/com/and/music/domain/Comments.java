@@ -14,20 +14,27 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
-* 
-* @TableName comments 评论
-*/
+ * 评论实体类
+ *
+ * @TableName comments 评论
+ */
 @Data
 @Accessors(chain = true)
 public class Comments implements Serializable {
 
+    private static final long serialVersionUID = 1L;
 
     @TableId(type = IdType.AUTO)
     private Integer commentId;
 
     private Integer userId;
 
-    private Integer songId;
+    private Integer otherId;
+
+    // 1**歌曲，2**专辑，3**歌单，4**评论
+    private Integer type;
+
+    private Integer parentId;
 
     private String content;
 
@@ -39,4 +46,6 @@ public class Comments implements Serializable {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
+    private Integer createUser;
 }
+

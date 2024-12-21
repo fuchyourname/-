@@ -16,5 +16,7 @@ public class GenreVo {
     private Integer genreId;
     private String name;
     // 1-歌曲 2-歌手 3-歌单
-    private Integer type;
+    private String type;
+
+    private String description;
 }

@@ -31,6 +31,8 @@ public class Albums implements Serializable {
 
     private String description;
 
+    private Integer type;
+
     private Integer status;
 
     private Integer createUser;

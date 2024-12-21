@@ -37,6 +37,9 @@ public class Playlists implements Serializable {
 
     private Integer songCount;
 
+    // 1-公开 2-私密
+    private Integer status = 1;
+
     private Long playCount;
 
     @TableField(fill = FieldFill.INSERT)

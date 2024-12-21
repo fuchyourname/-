@@ -39,9 +39,9 @@
               <DialogTitle class="flex justify-center text-center">发动态</DialogTitle>
               <form class="relative">
                 <div class="overflow-hidden rounded-lg border border-gray-300 shadow-sm">
-                <textarea rows="2" name="description" id="description" v-html="dynamicContent"
-          class="h-40 block w-full resize-none border-0 py-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm/6"
-          placeholder="一起聊聊音乐吧~"></textarea>
+                  <textarea rows="2" name="description" id="description" v-model="dynamicContent"
+                    class="h-40 block w-full resize-none border-0 py-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm/6"
+                    placeholder="一起聊聊音乐吧~"></textarea>
 
                   <!-- Spacer element to match the height of the toolbar -->
                   <div>
@@ -143,7 +143,7 @@
                     <div v-else
                       class="relative inline-flex items-center whitespace-nowrap rounded-full bg-gray-50 px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 sm:px-3">
                       <span class="flex items-center justify-center">
-                        <img :src="selectedSong.image" alt="Song Cover" class="size-5 shrink-0 mr-2 w-12 h-12" />
+                        <img :src="selectedSong.coverPath" alt="Song Cover" class="size-5 shrink-0 mr-2 w-12 h-12" />
                         <span class="flex flex-col">
                           <span class="font-bold">{{ selectedSong.title }}</span>
                           <span>{{ selectedSong.artist }}</span>
@@ -154,7 +154,6 @@
                           stroke="currentColor" class="size-6">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                         </svg>
-
                       </button>
                     </div>
                   </div>
@@ -194,11 +193,12 @@
               class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:p-6">
               <DialogTitle class="flex justify-center text-center">选择音乐</DialogTitle>
               <div class="mt-2">
-                <input type="text" v-model="searchQuery" placeholder="搜索歌曲..." class="w-full p-2 border rounded mb-4" />
+                <input type="text" v-model="searchQuery" placeholder="搜索歌曲..."
+                  class="w-full p-2 border rounded mb-4 focus:border-blue-500 focus:outline-none" />
                 <div class="grid grid-cols-2 gap-4">
                   <div v-for="song in filteredSongs" :key="song.id"
                     class="border p-2 rounded cursor-pointer flex flex-row" @click="selectSong(song)">
-                    <img :src="song.image" alt="Song Cover" class="w-14 h-14 object-cover" />
+                    <img :src="song.coverPath" alt="Song Cover" class="w-14 h-14 object-cover" />
                     <div class="ml-2">
                       <p class="font-bold">{{ song.title }}</p>
                       <p>{{ song.artist }}</p>
@@ -206,7 +206,7 @@
                   </div>
                 </div>
                 <div class="mt-4 flex justify-end">
-                  <button type="button" @click="showMusicModal = false"
+                  <button type="button" @click="showMusicModal = false" 
                     class="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
                     关闭
                   </button>
@@ -237,9 +237,8 @@ import DynamicsList from '../components/DynamicsList.vue'
 import axios from 'axios'
 
 const songs = [
-  { id: 1, title: 'Song 1', artist: 'Artist 1', image: 'https://via.placeholder.com/150' },
-  { id: 2, title: 'Song 2', artist: 'Artist 2', image: 'https://via.placeholder.com/150' },
-  // 更多歌曲...
+  { id: 29, title: '银河飞车', artist: '张叶蕾', coverPath: 'http://192.168.154.1:9000/music/cover/1/29_1733057020002.jpg' },
+  { id: 32, title: '忽然之间', artist: '莫文蔚', coverPath: 'http://192.168.154.1:9000/music/cover/1/32_1733057201514.jpg' },
 ];
 
 const searchQuery = ref('');
@@ -269,6 +268,28 @@ const labelled = ref(labels[0])
 
 const dynamicContent = ref('');
 
+// 监听 searchQuery 变化
+watch(searchQuery, async (newVal) => {
+  if (newVal.trim() === '') {
+    filteredSongs.value = []; // 如果输入为空，清空搜索结果
+    return;
+  }
+
+  try {
+    // 发送请求到后端获取数据
+    const response = await axios.post('/api/music/getSongPage', {
+      name: searchQuery.value,
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
+    });
+
+    // 更新过滤后的歌曲列表
+    filteredSongs.value = response.data.data;
+  } catch (error) {
+    console.error('Error fetching search results:', error);
+  }
+});
+
 const removeMusic = () => {
   dynamicContent.value = dynamicContent.value.replace(`🎵 ${selectedSong.value.title} by ${selectedSong.value.artist}\n`, '');
   selectedSong.value = null;
@@ -281,13 +302,13 @@ const selectSong = (song) => {
 
 watch(selected, (newVal) => {
   if (newVal.value !== null) {
-    dynamicContent.value += `<span class="mood">${newVal.name} ${newVal.icon.outerHTML}</span>\n`;
+    dynamicContent.value += `${newVal.name}`;
   }
 });
 
 watch(labelled, (newVal) => {
   if (newVal.value !== null) {
-    dynamicContent.value += ` <span class="label">#${newVal.name}#</span>`;
+    dynamicContent.value += `#${newVal.name}#`;
   }
 });
 const publishDynamic = async () => {
@@ -318,11 +339,13 @@ const publishDynamic = async () => {
 </script>
 <style scoped>
 .mood {
-  color: #ff6347; /* 橙色 */
+  color: #ff6347;
+  /* 橙色 */
 }
 
 .label {
-  color: #4caf50; /* 绿色 */
+  color: #4caf50;
+  /* 绿色 */
   font-weight: bold;
 }
 </style>

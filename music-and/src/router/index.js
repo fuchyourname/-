@@ -1,4 +1,4 @@
-// router/index.js
+// index.js
 import { createWebHistory, createRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 
@@ -18,10 +18,71 @@ import CommunityView from '../views/CommunityView.vue'
 import SongListDetailsView from '../views/SongListDetailsView.vue'
 import IndexView from '../views/IndexView.vue'
 import MusicUploadView from '../views/MusicUploadView.vue'
+import AdminIndex from '../views/admin/IndexView.vue'
+import UserListView from '../views/admin/UserListView.vue'
+import AlbumListView from '../views/admin/AlbumListView.vue'
+import MusicListView from '../views/admin/MusicListView.vue'
+import PicListView from '../views/admin/PicListView.vue'
+import PlayerListView from '../views/admin/PlayerListView.vue'
+import PlayListView from '../views/admin/PlayListView.vue'
+import SongItems from '../components/search/SongItems.vue'
+import PlayerItems from '../components/PlayerList.vue'
+import GenresListView from '../views/admin/GenresListView.vue'
+import UserItems from '../components/search/UserItems.vue'
+import PlayListItems from '../components/search/PlayListItems.vue'
+import AlbumItems from '../components/search/AlbumItems.vue'
+import PlayerItem from '../components/search/PlayerItems.vue'
+import UserDetailView from '../views/UserDetailView.vue'
+import PlayerDetailView from '../views/PlayerDetailView.vue'
+import SongsList from '../components/player/SongsList.vue'
+import AlbumsList from '../components/player/AlbumsList.vue'
+import SettingsView from '../views/SettingsView.vue'
 
 const routes = [
   { path: '/', component: LoginView },
   { path: '/login', component: LoginView },
+  {
+    path: '/admin',
+    component: AdminIndex,
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: 'index',
+        component: UserListView,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'music',
+        meta: { requiresAuth: true },
+        component: MusicListView,
+      },
+      {
+        path: 'album',
+        component: AlbumListView,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'player',
+        component: PlayerListView,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'playlist',
+        component: PlayListView,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'pic',
+        component: PicListView,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'genres',
+        component: GenresListView,
+        meta: { requiresAuth: true },
+      }
+    ]
+  },
   {
     path: '/home',
     component: HomeView,
@@ -45,6 +106,30 @@ const routes = [
         ]
       },
       {
+        path: 'userDetail/:id',
+        component: UserDetailView,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'playerDetail/:id',
+        component: PlayerDetailView,
+        meta: { requiresAuth: true },
+        children: [
+          {
+            path: 'songslist/:id',
+            component: SongsList,
+            props: true,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: 'albumslist/:id',
+            component: AlbumsList,
+            props: true,
+            meta: { requiresAuth: true },
+          }
+        ]
+      },
+      {
         path: 'myMusic',
         component: MyMusicView,
         meta: { requiresAuth: true },
@@ -55,14 +140,57 @@ const routes = [
             props: true,
             meta: { requiresAuth: true },
           },
+          {
+            path: 'playerlist',
+            component: PlayerItems,
+            props: true,
+            meta: { requiresAuth: true },
+          },
         ]
       },
       {
-        path: 'serach/:query',
+        path: 'serach/:keyword',
         name: 'serachRes',
         component: SerachResView,
         props: true,
         meta: { requiresAuth: true },
+        children: [
+          {
+            path: 'songItems/:keyword',
+            name: 'songItems',
+            component: SongItems,
+            props: true,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: 'userItems/:keyword',
+            name: 'userItems',
+            component: UserItems,
+            props: true,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: 'playListItems/:keyword',
+            name: 'playListItems',
+            component: PlayListItems,
+            props: true,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: 'albumItems/:keyword',
+            name: 'albumItems',
+            component: AlbumItems,
+            props: true,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: 'playerItems/:keyword',
+            name: 'playerItems',
+            component: PlayerItem,
+            props: true,
+            meta: { requiresAuth: true },
+          }
+        ]
       },
       {
         path: 'follow',
@@ -108,7 +236,12 @@ const routes = [
         path: 'upload',
         component: MusicUploadView,
         meta: { requiresAuth: true },
-      }
+      },
+      {
+        path: 'settings',
+        component: SettingsView,
+        meta: { requiresAuth: true },
+      },
     ]
   }
 ]
@@ -126,10 +259,10 @@ router.beforeEach(async (to, from, next) => {
     if (!isAuthenticated) {
       next('/login');
     } else {
-      next(); // 如果已登录，允许访问
+      next();
     }
   } else {
-    next(); // 对于不需要认证的页面，直接允许访问
+    next();
   }
 });
 

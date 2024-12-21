@@ -2,31 +2,22 @@
   <div class="flex flex-col space-y-4 pl-4 ml-20">
     <div v-for="category in categories" :key="category.title" class="flex space-x-2">
       <button v-for="item in category.items" :key="item" @click="selectItem(category, item)" :class="{
-        ' text-gray-700 font-semibold py-2 px-4 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm': true,
+        'text-gray-700 font-semibold py-2 px-4 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm': true,
         'bg-green-500 text-green-100': isItemSelected(category, item)
       }">
         {{ item }}
       </button>
     </div>
   </div>
-  <div class="bg-white py-24 sm:py-32">
-    <div class="mx-auto max-w-7xl px-6 lg:px-8">
-      <div class="mx-auto mt-1 flow-root max-w-2xl sm:mt-1 lg:mx-0 lg:max-w-none">
-        <div class="-mt-20 sm:-mx-4 sm:columns-2 sm:text-[0] lg:columns-3">
-          <div v-for="artist in artists" :key="artist.artistId"
-            class="mb-4 sm:inline-block sm:w-full sm:px-4">
-            <figure class="rounded-2xl bg-gray-50 text-sm leading-6">
-              <blockquote class="text-gray-900 p-0">
-                <p>{{ `“${artist.bio}”` }}</p>
-              </blockquote>
-              <figcaption class="flex items-center gap-x-2 p-0">
-                <img class="h-6 w-6 rounded-full bg-gray-50" :src="artist.picUrl" alt="" />
-                <div>
-                  <div class="font-semibold text-gray-900">{{ artist.name }}</div>
-                  <div class="text-gray-600">{{ `@${artist.nationality}` }}</div>
-                </div>
-              </figcaption>
-            </figure>
+  <div class="bg-white py-12 ml-12">
+    <div class="max-w-7xl px-6 lg:px-8">
+      <div class="mt-1 flow-root max-w-2xl sm:mt-1 lg:mx-0 lg:max-w-none">
+        <div class="grid grid-cols-1 sm:grid-cols-5 gap-4">
+          <div v-for="artist in artists" :key="artist.artistId" 
+          @click="goToArtistDetail(artist.artistId)"
+          class="relative group rounded-lg shadow-sm hover:shadow-md hover:border hover:border-gray-200 transition-shadow duration-300">
+            <img class="h-32 w-32 rounded-full bg-gray-50 mx-auto" :src="artist.picUrl" alt="" />
+            <div class="font-semibold text-gray-900 text-center mt-2">{{ artist.name }}</div>
           </div>
         </div>
       </div>
@@ -37,6 +28,9 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 // 定义数据
 const categories = ref([
@@ -72,7 +66,9 @@ const selectItem = (category, item) => {
   updateParams();
   fetchArtists();
 };
-
+const goToArtistDetail = (id) => {
+  router.push(`/home/playerDetail/${id}/songslist/${id}`)
+}
 const isItemSelected = (category, item) => {
   return selectedItems.value[category.title] === item;
 };

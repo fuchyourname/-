@@ -12,8 +12,10 @@ export const useUserStore = defineStore('user', {
       try {
         const response = await axios.post('/api/index/login', user);
         if (response.data.success) {
+          if (response.data.data.isAdmin) {
+            localStorage.setItem('role', true); // 存储到本地存储
+          }
           this.setUser(response.data.data);
-          console.log('Login successful!');
           localStorage.setItem('user', JSON.stringify(response.data.data)); // 存储到本地存储
           return true;
         } else {
@@ -26,6 +28,7 @@ export const useUserStore = defineStore('user', {
     },
     async logout() {
       localStorage.removeItem('user'); // 清除本地存储
+      localStorage.removeItem('role');
       return axios.get('/api/index/logout');
     },
     async initialize() {

@@ -152,6 +152,9 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
         }
         List<Artists> artistsList = artistsMapper.selectBatchIds(singerIds);
 
+        if (ObjectUtil.isEmpty(artistsList)) {
+            return R.ok();
+        }
         return R.ok(artistsList.stream().map(artists -> {
             return new SingerVo()
                     .setArtistId(artists.getArtistId())

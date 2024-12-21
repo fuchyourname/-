@@ -19,4 +19,8 @@ public class SingerVo {
     private String bio;
     private String picUrl;
     private String nationality;
+    private String gender;
+    private Long albums;
+    private Boolean isFollow;
+    private Long songs;
 }

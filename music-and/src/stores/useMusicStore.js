@@ -4,22 +4,45 @@ import { defineStore } from 'pinia';
 
 export const useMusicStore = defineStore('music', {
   state: () => ({
-    currentMusicId: null,
-    currentPlaylistId:null, // 新增字段
+    currentMusic: {
+      "songId": 0,
+      "title": "",
+      "artist": "",
+      "album": null,
+      "genre": null,
+      "duration": null,
+      "coverPath": "",
+      "filePath": "",
+      "lyricPath": "",
+      "like": null
+    },
     currentPlaylist: null, // 新增字段
   }),
   actions: {
-    setCurrentMusicId(id) {
-      this.currentMusicId = id;
+    setCurrentMusic(music) {
+      this.currentMusic = music;
     },
-    getCurrentMusicId() {
-      return this.currentMusicId;
+    getCurrentMusic() {
+      return this.currentMusic;
     },
-    setCurrentPlaylistId(id) {
-      this.currentPlaylistId = id; // 新增方法
+    setCurrentPlaylist(playlist) {
+      this.currentPlaylist = playlist; // 新增方法
     },
-    getCurrentPlaylistId() {
-      return this.currentPlaylistId; // 新增方法
+    // 上一首
+    async playPrevious() {
+      const currentIndex = this.currentPlaylist.findIndex(song => song.songId === this.currentMusic.songId);
+      if (currentIndex > 0) {
+        const previousSong = this.currentPlaylist[currentIndex - 1];
+        this.setCurrentMusic(previousSong);
+      }
+    },
+    // 下一首
+    async playNext() {
+      const currentIndex = this.currentPlaylist.findIndex(song => song.songId === this.currentMusic.songId);
+      if (currentIndex < this.currentPlaylist.length - 1) {
+        const nextSong = this.currentPlaylist[currentIndex + 1];
+        this.setCurrentMusic(nextSong);
+      }
     },
     async fetchPlaylistSongs() {
       try {
@@ -43,7 +66,7 @@ export const useMusicStore = defineStore('music', {
         return response.data.data;
       } catch (error) {
         console.error('Error fetching song URL:', error);
-       return null;
+        return null;
       }
     }
   },

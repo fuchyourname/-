@@ -14,6 +14,8 @@ import java.util.Date;
 @Accessors(chain = true)
 public class ArtistDto {
 
+    private Integer artistId;
+
     private String name;
 
     private String bio;

@@ -3,6 +3,7 @@ package com.and.music.service;
 import com.and.music.common.R;
 import com.and.music.domain.Genres;
 import com.and.music.dto.GenreDto;
+import com.and.music.dto.PageInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.stereotype.Service;
 
@@ -18,4 +19,7 @@ public interface GenresService extends IService<Genres> {
 
     // 获取分类列表根据类型
     public R getGenresList(Integer type);
+
+    // 分页获取分类
+    public R getGenresPage(PageInfo pageInfo);
 }

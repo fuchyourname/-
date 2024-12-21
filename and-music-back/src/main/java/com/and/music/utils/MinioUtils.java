@@ -2,6 +2,7 @@ package com.and.music.utils;
 
 import com.and.music.config.MinioProperties;
 import io.minio.*;
+import io.minio.errors.*;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
 import lombok.SneakyThrows;
@@ -11,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.*;
 import java.net.URL;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -28,6 +31,43 @@ public class MinioUtils {
 
     @Resource
     private MinioProperties minioProperties;
+
+    /*
+    删除文件
+     */
+    public void removeObject(String bucketName, String objectName) {
+        try {
+            minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(objectName).build());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * 分页获取minio下的指定桶的图片,返回包含完整路径名和文件名的集合
+     */
+public List<String> getAllImgList(String bucketName, String prefix) {
+    List<String> imgList = new ArrayList<>();
+    try {
+        Iterable<Result<Item>> results = minioClient.listObjects(
+                ListObjectsArgs.builder()
+                        .prefix(prefix)
+                        .bucket(bucketName)
+                        .recursive(true)
+                        .build());
+        for (Result<Item> result : results) {
+            Item item = result.get();
+            String objectName = item.objectName();
+            String objectUrl = minioProperties.getUrl() + "/" + bucketName + "/" + objectName;
+            imgList.add(objectUrl);
+        }
+        return imgList;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return null;
+    }
+}
+
 
     /**
      * 判断桶是否存在

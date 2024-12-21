@@ -2,7 +2,10 @@ package com.and.music.controller;
 
 
 import com.and.music.common.R;
+import com.and.music.dto.PageInfo;
 import com.and.music.dto.PlaylistDto;
+import com.and.music.service.FavoritesService;
+import com.and.music.service.GenresService;
 import com.and.music.service.PlaylistsService;
 import com.and.music.service.SongsService;
 import lombok.AllArgsConstructor;
@@ -19,6 +22,90 @@ import java.util.List;
 public class PlayListController {
 
     private final PlaylistsService playlistsService;
+    private final GenresService genresService;
+    private final FavoritesService favoritesService;
+
+    // 新增
+    @PostMapping("/add")
+    public R add(
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("image") MultipartFile image) {
+
+        PlaylistDto playlistDto = new PlaylistDto();
+        playlistDto.setName(name);
+        playlistDto.setDescription(description);
+        playlistDto.setImage(image);
+
+        return playlistsService.addPlaylists(playlistDto);
+            }
+
+    // 修改歌单
+    @PostMapping("/update")
+    public R update(
+            @RequestParam("playlistId") Integer playlistId,
+            @RequestParam("name") String name,
+                          @RequestParam("description") String description,
+                          @RequestParam(name = "image", required = false) MultipartFile image) {
+        PlaylistDto playlistDto = new PlaylistDto()
+                .setPlaylistId(playlistId)
+                .setName(name)
+                .setDescription(description)
+                .setImage(image);
+        return playlistsService.updatePlaylists(playlistDto);
+    }
+
+    // 歌单添加歌曲
+    @PostMapping("/addSong")
+    public R addSong(@RequestParam("songId") Integer songId,
+                     @RequestParam("playlistId") Integer playlistId) {
+        return playlistsService.addSong(songId, playlistId);
+    }
+
+    // 新增或更新歌单
+    @PostMapping("/saveOrUpdate")
+    public R saveOrUpdate(@RequestBody PlaylistDto playlistDto) {
+        return playlistsService.saveOrUpdate(playlistDto);
+    }
+
+    // 收藏歌单
+    @GetMapping("/favorite")
+    public R favorite(@RequestParam("playlistId") Integer playlistId) {
+        return favoritesService.addFavorites(playlistId);
+    }
+    // 取消收藏歌单
+    @GetMapping("/cancelFavorite")
+    public R cancelFavorite(@RequestParam("playlistId") Integer playlistId) {
+        return favoritesService.removeFavorites(playlistId);
+    }
+
+    // 歌单是否收藏
+    @GetMapping("/isFavorite")
+    public R isFavorite(@RequestParam("playlistId") Integer playlistId) {
+        return playlistsService.isFavorite(playlistId);
+    }
+    // 歌单中点赞的歌曲
+    @GetMapping("/getFavoriteSongs")
+    public R getFavoriteSongs(@RequestParam("playlistId") Integer playlistId) {
+        return playlistsService.getFavoriteSongs(playlistId);
+    }
+
+    // 获取歌单的所有分类
+    @GetMapping("/getGenresList")
+    public R getGenresList() {
+        return genresService.getGenresList(3);
+    }
+
+    // 修改歌单
+    @PostMapping("/updatePlayList")
+    public R updatePlayList(@RequestBody PlaylistDto playlistDto) {
+        return playlistsService.updatePlaylists(playlistDto);
+    }
+    // 分页歌单
+    @PostMapping("/getPlayListPage")
+    public R getPlayListPage(@RequestBody PageInfo pageInfo) {
+        return playlistsService.getPlaylistPage(pageInfo);
+    }
 
     // 添加歌单播放量
     @PostMapping("/addPlayCount")
@@ -41,15 +128,13 @@ public class PlayListController {
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("type") Integer type,
-            @RequestParam("image") MultipartFile image,
-            @RequestParam("songIds") List<Integer> songIds) {
+            @RequestParam("image") MultipartFile image) {
 
         PlaylistDto playlistDto = new PlaylistDto();
         playlistDto.setName(name);
         playlistDto.setDescription(description);
         playlistDto.setType(type);
         playlistDto.setImage(image);
-        playlistDto.setSongIds(songIds);
 
         return playlistsService.addPlaylists(playlistDto);
     }

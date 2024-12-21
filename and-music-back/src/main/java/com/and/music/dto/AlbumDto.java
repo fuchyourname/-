@@ -14,11 +14,17 @@ import java.util.Date;
 @Accessors(chain = true)
 public class AlbumDto {
 
+    private Integer albumId;
+
     private String title;
 
     private Integer artistId;
 
+    private Integer type;
+
     private MultipartFile coverImage;
+
+    private Date createTime;
 
     private String description;
 

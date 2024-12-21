@@ -31,7 +31,7 @@ public class Artists implements Serializable {
 
     private String picUrl;
 
-    // 性别
+    // 性别 1男 2女 3 其他
     private Integer sex;
 
     // 国籍

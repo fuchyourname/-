@@ -35,6 +35,8 @@ public class Users implements Serializable {
 
     private String picUrl;
 
+    private String nationality;
+
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
@@ -44,5 +46,9 @@ public class Users implements Serializable {
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
+    // 0:普通用户，1：管理员
+    private Integer type;
+    // 0：封号，1：正常
+    private Integer status;
 
 }

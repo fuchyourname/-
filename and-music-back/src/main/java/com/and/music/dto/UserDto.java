@@ -14,7 +14,13 @@ public class UserDto {
 
     private String password;
 
+    private String description;
+
+    private String nationality;
+
     private String email;
+
+    private Integer type;
 
     private MultipartFile pic;
 }

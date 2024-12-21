@@ -13,11 +13,11 @@
     </div>
   </div>
   <div class="grid grid-cols-4 gap-4 mt-8 ml-32">
-    <div v-for="follow in followList" :key="follow.id" class="flex items-center p-4 bg-white">
+    <div v-for="follow in followList" :key="follow.userId" class="flex items-center p-4 bg-white">
       <img :src="follow.picUrl" alt="头像" class="w-16 h-16 rounded-full mr-4" />
       <div class="flex-1">
-        <span class="text-xl font-medium">{{ follow.name }}</span>
-        <p class="text-gray-600">{{ follow.bio }}</p>
+        <span class="text-xl font-medium">{{ follow.userName }}</span>
+        <p class="text-gray-600">{{ follow.description }}</p>
       </div>
       <button class="ml-auto flex px-4 py-2 rounded" @click="toggleChat(follow)">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -32,13 +32,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRoute, useRouter } from 'vue-router'
 import ChatDialog from './ChatDialog.vue';
 
 const router = useRouter()
 const chatOpenList = ref([])
+const followList = ref([])
 
 const tabs = [
   { name: '全部', href: '/home/my/playlist', count: '52', current: true },
@@ -46,14 +47,18 @@ const tabs = [
   { name: '用户', href: '/home/my/dynamicsList', count: '6', current: false },
 ]
 
-const followList = [
-  { id: 1, name: '张杰', nationality: '中国', bio: '我是一个歌手', picUrl: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg' },
-  { id: 2, name: '李华', nationality: '中国', bio: '我是一个用户', picUrl: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg' },
-  { id: 3, name: '王五', nationality: '中国', bio: '我是一个歌手', picUrl: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg' },
-  { id: 4, name: '赵六', nationality: '中国', bio: '我是一个用户', picUrl: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg' },
-  { id: 5, name: '孙七', nationality: '中国', bio: '我是一个歌手', picUrl: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg' },
-  { id: 6, name: '周八', nationality: '中国', bio: '我是一个用户', picUrl: 'http://192.168.154.1:9000/music/cover/1/1005_1732423111003.jpg' }
-]
+const fetchFollowList = async () => {
+  try {
+    const response = await axios.get('/api/user/getFollowUserList'); // 假设这是你的API地址
+    followList.value = response.data.data; // 假设响应数据是一个数组
+  } catch (error) {
+    console.error("Failed to fetch follow list:", error);
+  }
+};
+
+onMounted(() => {
+  fetchFollowList();
+});
 
 const toggleChat = (follow) => {
   const index = chatOpenList.value.findIndex(f => f.id === follow.id);

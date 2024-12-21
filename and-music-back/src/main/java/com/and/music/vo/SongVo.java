@@ -21,6 +21,8 @@ public class SongVo {
 
     private String album;
 
+    private String genre;
+
     private String duration;
 
     private String coverPath;
@@ -28,4 +30,6 @@ public class SongVo {
     private String filePath;
 
     private String lyricPath;
+
+    private Boolean like;
 }

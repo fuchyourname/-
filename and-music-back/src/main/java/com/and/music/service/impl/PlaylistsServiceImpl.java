@@ -2,17 +2,23 @@ package com.and.music.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.and.music.common.R;
+import com.and.music.config.MinioProperties;
 import com.and.music.domain.*;
+import com.and.music.dto.FileDto;
+import com.and.music.dto.PageInfo;
 import com.and.music.dto.PlaylistDto;
 import com.and.music.mapper.*;
 import com.and.music.service.PlaylistsService;
 import com.and.music.utils.MinioUtils;
+import com.and.music.utils.PathUtils;
 import com.and.music.utils.UserContext;
 import com.and.music.vo.PlaylistVo;
 import com.and.music.vo.SongVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.catalina.User;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -35,9 +41,13 @@ import java.util.stream.Collectors;
 public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists>
         implements PlaylistsService {
     @Resource
+    private LikesMapper likeMapper;
+    @Resource
     private UsersMapper usersMapper;
     @Resource
     private MinioUtils minioUtils;
+    @Resource
+    private MinioProperties minioProperties;
     @Resource
     private AlbumsMapper albumsMapper;
     @Resource
@@ -49,7 +59,82 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
     @Resource
     private FavoritesMapper favoritesMapper;
     @Resource
+    private GenresMapper genresMapper;
+    @Resource
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Override
+    public R addSong(Integer songId, Integer playlistId) {
+
+        if (ObjectUtil.isEmpty(songId) || ObjectUtil.isEmpty(playlistId)) {
+            return R.fail("参数错误");
+        }
+
+        PlaylistSongs playlistSongs = new PlaylistSongs();
+        // 判断是否重复添加
+        LambdaQueryWrapper<PlaylistSongs> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PlaylistSongs::getPlaylistId, playlistId)
+                .eq(PlaylistSongs::getSongId, songId);
+        if (ObjectUtil.isNotEmpty(playlistSongsMapper.selectOne(queryWrapper))) {
+            return R.fail("歌曲已添加");
+        }
+        playlistSongs.setPlaylistId(playlistId)
+                .setSongId(songId)
+                .setCreateUser(UserContext.getUser().getUserId())
+                .setUpdateUser(UserContext.getUser().getUserId());
+        if (playlistSongsMapper.insert(playlistSongs) > 0) {
+            return R.ok();
+        }
+        return R.fail("添加失败");
+    }
+
+    @Override
+    public R saveOrUpdate(PlaylistDto playlistDto) {
+
+        if (ObjectUtil.isEmpty(playlistDto)) {
+            return R.fail("参数错误");
+        }
+        if (ObjectUtil.isEmpty(playlistDto.getPlaylistId())) {
+            return addPlaylists(playlistDto);
+        }
+        return updatePlaylists(playlistDto);
+    }
+
+    @Override
+    public R isFavorite(Integer playlistId) {
+
+        Integer userId = UserContext.getUser().getUserId();
+        LambdaQueryWrapper<Favorites> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Favorites::getUserId, userId)
+                .eq(Favorites::getContentId, playlistId)
+                .eq(Favorites::getType, 2);
+        if (ObjectUtil.isNotEmpty(favoritesMapper.selectOne(queryWrapper))) {
+            return R.ok(true);
+        }
+        return R.ok(false);
+    }
+
+    @Override
+    public R getFavoriteSongs(Integer playlistId) {
+
+        LambdaQueryWrapper<PlaylistSongs> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PlaylistSongs::getPlaylistId, playlistId);
+        List<PlaylistSongs> playlistSongsList = playlistSongsMapper.selectList(queryWrapper);
+        if (ObjectUtil.isEmpty(playlistSongsList)) {
+            return R.ok(new ArrayList<>());
+        }
+        List<Integer> songIds = playlistSongsList.stream().map(PlaylistSongs::getSongId).collect(Collectors.toList());
+        LambdaQueryWrapper<Likes> queryWrapper1 = new LambdaQueryWrapper<>();
+        queryWrapper1.eq(Likes::getUserId, UserContext.getUser().getUserId())
+                .in(Likes::getContentId, songIds)
+                .eq(Likes::getType, 1);
+        List<Likes> likesList = likeMapper.selectList(queryWrapper1);
+        if (ObjectUtil.isEmpty(likesList)) {
+            return R.ok(new ArrayList<>());
+        }
+        List<Integer> likeIds = likesList.stream().map(Likes::getContentId).collect(Collectors.toList());
+        return R.ok(likeIds);
+    }
 
     @Override
     @Transactional
@@ -75,23 +160,23 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
         Playlists playlists = new Playlists();
         playlists.setName(name);
         playlists.setDescription(playlistDto.getDescription());
-//        playlists.setUserId(UserContext.getUser().getUserId());
-        playlists.setUserId(2);
+        playlists.setUserId(UserContext.getUser().getUserId());
+        if (ObjectUtil.isEmpty(playlistDto.getType())) {
+            playlists.setStatus(1);
+        }
         this.baseMapper.insert(playlists);
 
         try {
             MultipartFile pl = playlistDto.getImage();
             if (pl != null) {
                 // 上传歌曲图片
-                String bucketName = "music";
-                String objectPath = "cover/" + playlistDto.getType() + "/" + playlists.getPlaylistId() + ".jpg";
+                FileDto fileDto = new FileDto();
+                fileDto.setMusicPic(pl);
+                fileDto.setGenreId(3);
+                String objectPath = PathUtils.getCoverPath(fileDto, playlistDto.getPlaylistId());
 
-                if (!minioUtils.bucketExists(bucketName)) {
-                    minioUtils.createBucket(bucketName);
-                }
-
-                String coverUrl = minioUtils.putObject(bucketName, objectPath, pl);
-
+                String coverUrl = minioUtils.putObject(minioProperties.getBucket(),
+                        objectPath, fileDto.getMusicPic());
                 playlists.setImageUrl(coverUrl);
             }
         } catch (Exception e) {
@@ -99,11 +184,79 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
             throw new RuntimeException("上传失败");
         }
         this.baseMapper.updateById(playlists);
-
-        playlistSongsMapper.insertBatch(playlists.getPlaylistId(), playlistDto.getSongIds());
-
         return R.ok();
     }
+
+    @Override
+    public R updatePlaylists(PlaylistDto playlistDto) {
+        if (ObjectUtil.isEmpty(playlistDto)) {
+            return R.fail("参数错误");
+        }
+        if (ObjectUtil.isEmpty(playlistDto.getPlaylistId())) {
+            return R.fail("参数错误");
+        }
+        Playlists playlists = this.baseMapper.selectById(playlistDto.getPlaylistId());
+        playlists.setName(playlistDto.getName());
+        playlists.setDescription(playlistDto.getDescription());
+        playlists.setUpdateUser(UserContext.getUser().getUserId());
+        if (ObjectUtil.isNotEmpty(playlistDto.getImage())) {
+            try {
+                // http://192.168.154.1:9000/music/cover/1/27_1732354594609.jpg
+                String objectName = playlists.getImageUrl().split("/")[3];
+                minioUtils.removeObject(minioProperties.getBucket(), objectName);
+                MultipartFile pl = playlistDto.getImage();
+                if (pl != null) {
+                    // 上传歌曲图片
+                    FileDto fileDto = new FileDto();
+                    fileDto.setMusicPic(pl);
+                    fileDto.setGenreId(3);
+                    String objectPath = PathUtils.getCoverPath(fileDto, playlistDto.getPlaylistId());
+
+                    String coverUrl = minioUtils.putObject(minioProperties.getBucket(),
+                            objectPath, fileDto.getMusicPic());
+                    playlists.setImageUrl(coverUrl);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException("上传失败");
+            }
+        }
+        this.baseMapper.updateById(playlists);
+        return R.ok(playlists);
+    }
+
+    @Override
+    public R getPlaylistPage(PageInfo pageInfo) {
+
+        LambdaQueryWrapper<Playlists> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(ObjectUtil.isNotEmpty(pageInfo.getName()), Playlists::getName, pageInfo.getName())
+                .eq(Playlists::getStatus, 1)
+                .ne(Playlists::getType, 0)
+                .orderByDesc(Playlists::getPlayCount);
+        Page<Playlists> page = new Page<>(pageInfo.getPageNum(), pageInfo.getPageSize());
+        page(page, queryWrapper);
+        List<Playlists> playlistsList = page.getRecords();
+        List<Integer> createUserList = playlistsList.stream().map(Playlists::getUserId).collect(Collectors.toList());
+        List<Integer> genresIds = playlistsList.stream().map(Playlists::getType).collect(Collectors.toList());
+        List<Users> usersList = usersMapper.selectBatchIds(createUserList);
+        List<Genres> genresList = genresMapper.selectBatchIds(genresIds);
+        Map<Integer, Genres> genresMap = genresList.stream().collect(Collectors.toMap(Genres::getGenreId, genres -> genres));
+        Map<Integer, Users> usersMap = usersList.stream().collect(Collectors.toMap(Users::getUserId, users -> users));
+        List<PlaylistVo> playlistVoList = playlistsList.stream().map(playlists -> {
+            return new PlaylistVo()
+                    .setPlaylistId(playlists.getPlaylistId())
+                    .setUserName(usersMap.get(playlists.getUserId()).getUserName())
+                    .setName(playlists.getName())
+                    .setPlayCount(playlists.getPlayCount())
+                    .setDescription(playlists.getDescription())
+                    .setImageUrl(playlists.getImageUrl())
+                    .setType(genresMap.get(playlists.getType()).getName())
+                    .setSongCount(playlists.getSongCount())
+                    ;
+        }).collect(Collectors.toList());
+        return R.ok(playlistVoList, page.getTotal());
+    }
+
     @Override
     public R getRecommendPlaylists() {
         /**
@@ -111,8 +264,12 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
          * 2. 根据用户id获取用户信息
          * 3. 构造返回结果
          */
-        List<Playlists> playlistsList =
-                this.list(new QueryWrapper<Playlists>().last("limit 10"));
+        LambdaQueryWrapper<Playlists> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.ne(Playlists::getType, 0);
+        queryWrapper.orderByDesc(Playlists::getPlayCount);
+        queryWrapper.eq(Playlists::getStatus, 1);
+        queryWrapper.last("limit 10");
+        List<Playlists> playlistsList = list(queryWrapper);
 
         if (ObjectUtil.isEmpty(playlistsList)) {
             return R.ok("暂无推荐歌单");
@@ -182,6 +339,7 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
                     .setAlbum(albumsMap.get(songs.getAlbumId()).getTitle())
                     .setArtist(artistsMap.get(songs.getArtistId()).getName())
                     .setCoverPath(songs.getCoverPath())
+                    .setDuration(songs.getDuration())
                     .setFilePath(songs.getFilePath())
                     .setLyricPath(songs.getLyricPath());
         }).collect(Collectors.toList()));
@@ -195,7 +353,10 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
             return R.fail("参数错误");
         }
 
-        List<Playlists> playlistsList = this.list(new QueryWrapper<Playlists>().eq("type", type));
+        List<Playlists> playlistsList = this.list(new QueryWrapper<Playlists>()
+                .eq("status", 1)
+                .ne("type", 0)
+                .eq("type", type));
 
         if (ObjectUtil.isEmpty(playlistsList)) {
             return R.ok("暂无该类型的歌单");
@@ -287,10 +448,6 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
         return R.ok(playlistVoList);
     }
 
-    @Override
-    public R getPlaylistsByName(String playlistName) {
-        return null;
-    }
 
     @Override
     public R addPlayCount(Integer playlistId) {

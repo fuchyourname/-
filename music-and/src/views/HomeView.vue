@@ -52,9 +52,9 @@
       </PopoverGroup>
       <div class="hidden lg:flex lg:flex-1 lg:justify-end">
 
-        <a @click="searchVisible = true" class="ml-2 p-2 text-gray-400 hover:text-gray-500 mr-4">
-                  <MagnifyingGlassIcon class="size-6" aria-hidden="true" />
-                </a>
+        <a @click="toggleSearchDialog" class="ml-2 p-2 text-gray-400 hover:text-gray-500 mr-4">
+      <MagnifyingGlassIcon class="size-6" aria-hidden="true" />
+    </a>
 
         <button type="button" class="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
             <!-- <span class="absolute -inset-1.5" /> -->
@@ -75,7 +75,7 @@
                   <RouterLink to="/home/my/playlist" :class="[active ? 'bg-gray-100 outline-none' : '', 'block px-4 py-2 text-sm text-gray-700']">我的</RouterLink>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
-                  <a href="#" :class="[active ? 'bg-gray-100 outline-none' : '', 'block px-4 py-2 text-sm text-gray-700']">设置</a>
+                   <RouterLink to="/home/settings" :class="[active ? 'bg-gray-100 outline-none' : '', 'block px-4 py-2 text-sm text-gray-700']">设置</RouterLink>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
                   <a @click = "logout" :class="[active ? 'bg-gray-100 outline-none' : '', 'block px-4 py-2 text-sm text-gray-700']">登出</a>
@@ -132,8 +132,12 @@ const logout = () => {
   router.push('/login');
 }
 
+const toggleSearchDialog = () => {
+  searchVisible.value = !searchVisible.value;
+}
+
 const closeSearchDialog = () => {
-  searchVisible.value = false
+  searchVisible.value = false;
 }
 
 const products = [
