@@ -1,6 +1,6 @@
 <template>
-    <TransitionRoot as="template">
-    <Dialog class="relative z-10" @close="open = false">
+  <TransitionRoot as="template" :show="isOpen">
+    <Dialog class="relative z-10" @close="closePlayList">
       <div class="fixed inset-0" />
       <div class="fixed inset-0 overflow-hidden">
         <div class="absolute inset-0 overflow-hidden">
@@ -8,7 +8,7 @@
             <TransitionChild as="template" enter="transform transition ease-in-out duration-500 sm:duration-700"
               enter-from="translate-x-full" enter-to="translate-x-0"
               leave="transform transition ease-in-out duration-500 sm:duration-700" leave-from="translate-x-0"
-              leave-to="translate-x-full">
+              leave-to="translate-x-full" :show="isOpen">
               <DialogPanel class="pointer-events-auto w-screen max-w-md">
                 <div class="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
                   <div class="px-4 sm:px-6">
@@ -17,7 +17,7 @@
                       <div class="ml-3 flex h-7 items-center">
                         <button type="button"
                           class="relative rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                          @click="open = false">
+                          @click="closePlayList">
                           <span class="absolute -inset-2.5" />
                           <span class="sr-only">Close panel</span>
                           <XMarkIcon class="size-6" aria-hidden="true" />
@@ -64,9 +64,34 @@
 </template>
 
 <script setup>
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
-import { XMarkIcon } from '@heroicons/vue/24/outline'
-import { useMusicStore } from '../stores/useMusicStore';
+import { ref, computed, watch } from 'vue';
+import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
+import { XMarkIcon } from '@heroicons/vue/24/outline';
+import { useMusicStore } from '../../stores/useMusicStore';
 
 const musicStore = useMusicStore();
+
+const props = defineProps({
+  close: {
+    type: Function,
+    required: true
+  },
+  isOpen: {
+    type: Boolean,
+    required: true
+  }
+});
+
+const songs = musicStore.currentPlaylist;
+const currentMusicId = computed(() => musicStore.currentMusic?.songId);
+const isPlaying = computed(() => !musicStore.isPaused);
+
+const closePlayList = () => {
+  console.log('Closing PlayList');
+  props.close();
+};
+
+watch(() => props.isOpen, (newVal) => {
+  console.log(`PlayList visibility changed to: ${newVal}`);
+});
 </script>

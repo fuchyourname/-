@@ -18,20 +18,26 @@ import com.and.music.service.UsersService;
 import com.and.music.utils.MinioUtils;
 import com.and.music.utils.PathUtils;
 import com.and.music.utils.UserContext;
+import com.and.music.vo.FileVo;
 import com.and.music.vo.UserSongsVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class UserSongsServiceImpl extends ServiceImpl<UserSongsMapper, UserSongs>
         implements UserSongsService {
     @Resource
@@ -42,6 +48,34 @@ public class UserSongsServiceImpl extends ServiceImpl<UserSongsMapper, UserSongs
     private AlbumsMapper albumsMapper;
     @Resource
     private ArtistsMapper artistsMapper;
+
+    @Override
+   public R download(Integer songId) {
+       LambdaQueryWrapper<UserSongs> queryWrapper = new LambdaQueryWrapper<>();
+       queryWrapper.eq(UserSongs::getUserSongsId, songId);
+       UserSongs userSongs = this.baseMapper.selectOne(queryWrapper);
+       if (ObjectUtil.isEmpty(userSongs)) {
+           return R.fail("歌曲不存在");
+       }
+       String url = userSongs.getSongUrl();
+       int startIndex = url.indexOf("/music/") + "/music/".length();
+       String objectName = url.substring(startIndex);
+
+       try (InputStream inputStream = minioUtils.getObject(minioProperties.getBucket(), objectName)) {
+           // 你可以在这里处理 inputStream，例如将其转换为字节数组或其他格式
+           byte[] content = inputStream.readAllBytes();
+           String base64Content = Base64.getEncoder().encodeToString(content);
+           FileVo fileVo = new FileVo();
+           fileVo.setFile(base64Content);
+           fileVo.setFileName(userSongs.getName());
+           fileVo.setFileType(userSongs.getType());
+           return R.ok(fileVo);
+       } catch (Exception e) {
+           log.error("下载歌曲失败", e);
+           return R.fail("下载失败");
+       }
+   }
+
 
     @Override
     @Transactional

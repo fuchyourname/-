@@ -46,7 +46,7 @@
           </transition>
         </Popover>
 
-        <RouterLink to="/home/myMusic" class="text-sm font-semibold leading-6 text-gray-900">我的音乐</RouterLink>
+        <RouterLink to="/home/myMusic/playerlist" class="text-sm font-semibold leading-6 text-gray-900">我的音乐</RouterLink>
         <RouterLink to="/home/community" class="text-sm font-semibold leading-6 text-gray-900">关注</RouterLink>
         <RouterLink to="/home/upload" class="text-sm font-semibold leading-6 text-gray-900">云音乐</RouterLink>
       </PopoverGroup>
@@ -103,13 +103,7 @@ import {
   PopoverPanel,
   Menu, MenuButton, MenuItem, MenuItems
 } from '@headlessui/vue'
-import {
-  ArrowPathIcon,
-  ChartPieIcon,
-  CursorArrowRaysIcon,
-  FingerPrintIcon,
-  SquaresPlusIcon,
-} from '@heroicons/vue/24/outline'
+import { HomeIcon, UserGroupIcon, FolderIcon, ChartBarIcon } from '@heroicons/vue/24/outline'
 import { BellIcon,MagnifyingGlassIcon} from '@heroicons/vue/24/outline'
 import { ChevronDownIcon, PhoneIcon, PlayCircleIcon} from '@heroicons/vue/20/solid'
 import { RouterLink, RouterView } from 'vue-router';
@@ -141,11 +135,10 @@ const closeSearchDialog = () => {
 }
 
 const products = [
-  { name: '首页', description: 'Get a better understanding of your traffic', href: '/home/index', icon: ChartPieIcon },
-  { name: '歌手', description: 'Speak directly to your customers', href: '/home/player', icon: CursorArrowRaysIcon },
-  { name: '分类歌单', description: 'Your customers’ data will be safe and secure', href: '/home/category', icon: FingerPrintIcon },
-  { name: '排行榜', description: 'Connect with third-party tools', href: '#', icon: SquaresPlusIcon },
-  { name: '专辑', description: 'Build strategic funnels that will convert', href: '#', icon: ArrowPathIcon },
+  { name: '音乐首页', description: 'Explore the latest music trends', href: '/home/index', icon: HomeIcon },
+  { name: '歌手列表', description: 'Discover a wide range of artists', href: '/home/player', icon: UserGroupIcon }, // 修改了描述
+  { name: '音乐分类', description: 'Browse music by different genres', href: '/home/category', icon: FolderIcon }, // 修改了描述
+  { name: '音乐排行榜', description: 'View the latest music rankings', href: '#', icon: ChartBarIcon },
 ]
 const callsToAction = [
   { name: 'Watch demo', href: '#', icon: PlayCircleIcon },

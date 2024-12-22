@@ -37,6 +37,7 @@ import PlayerDetailView from '../views/PlayerDetailView.vue'
 import SongsList from '../components/player/SongsList.vue'
 import AlbumsList from '../components/player/AlbumsList.vue'
 import SettingsView from '../views/SettingsView.vue'
+import RankListView from '../views/RankListView.vue'
 
 const routes = [
   { path: '/', component: LoginView },
@@ -104,6 +105,11 @@ const routes = [
             meta: { requiresAuth: true },
           }
         ]
+      },
+      {
+        path: 'rankList/:id',
+        component: RankListView,
+        meta: { requiresAuth: true },
       },
       {
         path: 'userDetail/:id',

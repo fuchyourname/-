@@ -6,7 +6,7 @@
         <div class="rank-list bg-hot-songs rounded-lg shadow-md p-4">
           <div class="flex justify-between items-center">
             <h2 class="text-2xl font-bold mb-4 text-white">热歌榜</h2>
-            <router-link to="/hot-songs" class="text-blue-300 hover:text-blue-500">更多</router-link>
+            <router-link to="/home/rankList/1" class="text-blue-300 hover:text-blue-500">更多</router-link>
           </div>
           <ul>
             <li v-for="(song, index) in hotSongs.slice(0, 3)" :key="index" class="mb-4">
@@ -28,7 +28,7 @@
         <div class="rank-list bg-popular-songs rounded-lg shadow-md p-4">
           <div class="flex justify-between items-center">
             <h2 class="text-2xl font-bold mb-4 text-white">新歌榜</h2>
-            <router-link to="/popular-songs" class="text-blue-300 hover:text-blue-500">更多</router-link>
+            <router-link to="/home/rankList/2" class="text-blue-300 hover:text-blue-500">更多</router-link>
           </div>
           <ul>
             <li v-for="(song, index) in popularSongs.slice(0, 3)" :key="index" class="mb-4">
@@ -64,17 +64,13 @@ onMounted(async () => {
       axios.get('/api/music/new')
     ]);
 
-    hotSongs.value = hotResponse.data.data;
-    popularSongs.value = popularResponse.data.data;
+    hotSongs.value = hotResponse.data.data.songs;
+    popularSongs.value = popularResponse.data.data.songs;
   } catch (error) {
     console.error("Failed to fetch songs:", error);
   }
 });
 
-// 处理“更多”按钮的点击事件
-const handleMoreClick = (path) => {
-  router.push(path);
-};
 </script>
 
 <style scoped>

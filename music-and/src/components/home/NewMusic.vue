@@ -48,6 +48,7 @@ onMounted(async () => {
 
 const playSong = (song) => {
     musicStore.setCurrentMusic(song);
+    musicStore.setCurrentPlaylist(musicStore.currentPlaylist.concat(song));
     console.log(song);
 };
 </script>

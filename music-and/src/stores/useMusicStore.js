@@ -16,7 +16,7 @@ export const useMusicStore = defineStore('music', {
       "lyricPath": "",
       "like": null
     },
-    currentPlaylist: null, // 新增字段
+    currentPlaylist: [], // 新增字段
   }),
   actions: {
     setCurrentMusic(music) {

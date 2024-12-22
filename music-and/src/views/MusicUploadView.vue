@@ -18,15 +18,15 @@
       <!-- 上传按钮 -->
       <div class="mt-6 w-28">
         <label for="file-upload"
-               :class="['relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 flex items-center px-4 py-2', {'opacity-50 cursor-not-allowed': isUploadDisabled}]"
-               :disabled="isUploadDisabled">
+               :class="['relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 flex items-center px-4 py-2', {'opacity-50 cursor-not-allowed': isUploadDisabled || isUploading}]"
+               :disabled="isUploadDisabled || isUploading">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                stroke="currentColor" class="size-5"> <!-- 减小SVG图标大小 -->
             <path stroke-linecap="round" stroke-linejoin="round"
                   d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z"/>
           </svg>
-          <span class="ml-2 text-green-500">上传</span> <!-- 增加间距 -->
-          <input id="file-upload" type="file" class="sr-only" @change="handleFileUpload" accept="audio/*" :disabled="isUploadDisabled"/>
+          <span class="ml-2 text-green-500">{{ isUploading ? '上传中...' : '上传' }}</span> <!-- 增加间距 -->
+          <input id="file-upload" type="file" class="sr-only" @change="handleFileUpload" accept="audio/*" :disabled="isUploadDisabled || isUploading"/>
         </label>
       </div>
 
@@ -43,6 +43,7 @@
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">格式</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">上传时间</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">大小</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
           </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
@@ -61,6 +62,9 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ song.type }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formateDate(song.createTime) }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ song.size  + "MB" }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <button @click="downloadSong(song.userSongsId)" class="text-blue-500 hover:text-blue-700">下载</button>
+            </td>
           </tr>
           </tbody>
         </table>
@@ -76,13 +80,14 @@ import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 
 const usedSpace = ref('0 GB');
-const totalSpace = ref('100 GB');
+const totalSpace = ref('6 GB');
 const spaceUsagePercentage = ref(0);
 const uploadedSongs = ref([]);
 const currentPage = ref(1);
 const pageSize = ref(10);
 const loadingMore = ref(false);
 const noMoreData = ref(false);
+const isUploading = ref(false);
 
 // 计算属性判断是否禁用上传按钮
 const isUploadDisabled = computed(() => {
@@ -116,8 +121,8 @@ const fetchUploadedSongs = async () => {
 
     // 更新网盘使用情况
     usedSpace.value = data.total + " GB";
-    totalSpace.value = "100 GB";
-    spaceUsagePercentage.value = data.spaceUsagePercentage;
+    totalSpace.value = "6 GB";
+    spaceUsagePercentage.value = usedSpace.value / totalSpace.value * 100;
   } catch (error) {
     console.error("Failed to fetch uploaded songs:", error);
   } finally {
@@ -148,6 +153,7 @@ const handleFileUpload = async (event) => {
     formData.append('file', file);
 
     try {
+      isUploading.value = true;
       const response = await axios.post('/api/user/uploadSong', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -167,9 +173,40 @@ const handleFileUpload = async (event) => {
       }
     } catch (error) {
       console.error("Failed to upload file:", error);
+    } finally {
+      isUploading.value = false;
     }
   }
 };
+
+const downloadSong = async (songId) => {
+  try {
+    const response = await axios.get(`/api/user/download/${songId}`, {
+      responseType: 'json', // 设置为json
+    });
+
+    const base64Content = response.data.data.file;
+    const byteCharacters = atob(base64Content);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: response.data.data.fileType });
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `${response.data.data.fileName}.${response.data.data.fileType}`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Failed to download song:", error);
+  }
+};
+
 </script>
 
 <style scoped>

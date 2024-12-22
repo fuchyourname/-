@@ -366,6 +366,7 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
             return new PlaylistVo()
                     .setPlaylistId(playlists.getPlaylistId())
                     .setName(playlists.getName())
+                    .setUserId(playlists.getUserId())
                     .setDescription(playlists.getDescription())
                     .setImageUrl(playlists.getImageUrl());
         }).collect(Collectors.toList());
@@ -379,11 +380,11 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
 
         List<Users> usersList = usersMapper.selectBatchIds(userIds);
 
+        Map<Integer, Users> usersMap = usersList.stream().collect(Collectors.toMap(Users::getUserId, users -> users));
+
         playlistVoList.forEach(playlistVo -> {
-            usersList.stream().filter(users -> users.getUserId().equals(playlistVo.getPlaylistId())).findFirst().ifPresent(users -> {
-                playlistVo.setUserName(users.getUserName());
-                playlistVo.setUserAvatar(users.getPicUrl());
-            });
+            playlistVo.setUserName(usersMap.get(playlistVo.getUserId()).getUserName());
+            playlistVo.setUserAvatar(usersMap.get(playlistVo.getUserId()).getPicUrl());
         });
 
         return R.ok(playlistVoList);

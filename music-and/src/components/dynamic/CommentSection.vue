@@ -2,6 +2,7 @@
   <div>
     <!-- 评论输入框 -->
     <div class="mt-4 ml-16">
+      <div class="border-b border-gray-300 mb-4"></div>
       <div class="flex items-center">
         <img :src="post.userAvatar" alt="User Avatar" class="w-10 h-10 mr-3 rounded-full">
         <input v-model="post.newComment" @keyup.enter="addComment" type="text" placeholder="添加评论..." class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -16,6 +17,7 @@
 </template>
 
 <script setup>
+import CommentItem from './CommentItem.vue'
 const props = defineProps({
   post: Object
 })

@@ -15,6 +15,7 @@ import java.util.List;
 public class PlaylistVo {
 
     private Integer playlistId;
+    private Integer userId;
     private String userName;
     private String userAvatar;
     private String name;

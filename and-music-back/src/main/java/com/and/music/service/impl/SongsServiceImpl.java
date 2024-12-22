@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -62,7 +63,7 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
     public List<SongVo> calculateHotSongs() {
         // 热歌榜根据播放次数排序
         LambdaQueryWrapper<Songs> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.orderByDesc(Songs::getPlayCount).last("LIMIT 3");
+        queryWrapper.orderByDesc(Songs::getPlayCount).last("LIMIT 100");
         List<Songs> list = list(queryWrapper);
         if (ObjectUtil.isEmpty(list)) {
             return null;
@@ -70,6 +71,16 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
         List<Integer> artistIdList = list.stream().map(Songs::getArtistId).collect(Collectors.toList());
         List<Artists> artistsList = artistsMapper.selectBatchIds(artistIdList);
         Map<Integer, Artists> artistMap = artistsList.stream().collect(Collectors.toMap(Artists::getArtistId, v -> v));
+        List<Integer> songsIdList = list.stream().map(Songs::getSongId).collect(Collectors.toList());
+        LambdaQueryWrapper<Likes> queryWrapper2 = new LambdaQueryWrapper<>();
+        queryWrapper2.eq(Likes::getType, 1)
+                .in(Likes::getContentId, songsIdList);
+        List<Likes> likesList = likesMapper.selectList(queryWrapper2);
+        Map<Integer, Long> likesMap = likesList.stream().collect(Collectors.groupingBy(Likes::getContentId, Collectors.counting()));
+        LambdaQueryWrapper<Albums> albumsQueryWrapper = new LambdaQueryWrapper<>();
+        albumsQueryWrapper.in(Albums::getAlbumId, list.stream().map(Songs::getAlbumId).collect(Collectors.toList()));
+        List<Albums> albumsList = albumsMapper.selectList(albumsQueryWrapper);
+        Map<Integer, Albums> albumsMap = albumsList.stream().collect(Collectors.toMap(Albums::getAlbumId, v -> v));
         List<SongVo> listVo = list.stream().map(song -> {
             Artists artist = artistMap.get(song.getArtistId());
 
@@ -78,6 +89,9 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
                     .setTitle(song.getTitle())
                     .setArtist(Optional.ofNullable(artist).map(Artists::getName).orElse(null))
                     .setFilePath(song.getFilePath())
+                    .setAlbum(albumsMap.get(song.getAlbumId()).getTitle())
+                    .setDuration(song.getDuration())
+                    .setLike(likesMap.get(song.getSongId()) != null)
                     .setLyricPath(song.getLyricPath())
                     .setCoverPath(song.getCoverPath())
                     ;
@@ -90,7 +104,7 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
     public List<SongVo> calculateNewSongs() {
         // 新歌榜根据发布时间排序
         LambdaQueryWrapper<Songs> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.orderByDesc(Songs::getCreateTime).last("LIMIT 3");
+        queryWrapper.orderByDesc(Songs::getCreateTime).last("LIMIT 100");
         List<Songs> list = list(queryWrapper);
         if (ObjectUtil.isEmpty(list)) {
             return null;
@@ -98,6 +112,16 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
         List<Integer> artistIdList = list.stream().map(Songs::getArtistId).collect(Collectors.toList());
         List<Artists> artistsList = artistsMapper.selectBatchIds(artistIdList);
         Map<Integer, Artists> artistMap = artistsList.stream().collect(Collectors.toMap(Artists::getArtistId, v -> v));
+        List<Integer> songsIdList = list.stream().map(Songs::getSongId).collect(Collectors.toList());
+        LambdaQueryWrapper<Likes> queryWrapper2 = new LambdaQueryWrapper<>();
+        queryWrapper2.eq(Likes::getType, 1)
+                .in(Likes::getContentId, songsIdList);
+        List<Likes> likesList = likesMapper.selectList(queryWrapper2);
+        Map<Integer, Long> likesMap = likesList.stream().collect(Collectors.groupingBy(Likes::getContentId, Collectors.counting()));
+        LambdaQueryWrapper<Albums> albumsQueryWrapper = new LambdaQueryWrapper<>();
+        albumsQueryWrapper.in(Albums::getAlbumId, list.stream().map(Songs::getAlbumId).collect(Collectors.toList()));
+        List<Albums> albumsList = albumsMapper.selectList(albumsQueryWrapper);
+        Map<Integer, Albums> albumsMap = albumsList.stream().collect(Collectors.toMap(Albums::getAlbumId, v -> v));
         List<SongVo> listVo = list.stream().map(song -> {
             Artists artist = artistMap.get(song.getArtistId());
 
@@ -106,6 +130,9 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
                     .setTitle(song.getTitle())
                     .setArtist(Optional.ofNullable(artist).map(Artists::getName).orElse(null))
                     .setFilePath(song.getFilePath())
+                    .setAlbum(albumsMap.get(song.getAlbumId()).getTitle())
+                    .setDuration(song.getDuration())
+                    .setLike(likesMap.get(song.getSongId()) != null)
                     .setLyricPath(song.getLyricPath())
                     .setCoverPath(song.getCoverPath())
                     ;
@@ -116,11 +143,13 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
     @Override
     public void cacheHotSongs(List<SongVo> hotSongs) {
         redisTemplate.opsForList().rightPushAll("hot_songs", hotSongs);
+        redisTemplate.expire("hot_songs", 1, TimeUnit.HOURS);
     }
 
     @Override
     public void cacheNewSongs(List<SongVo> newSongs) {
         redisTemplate.opsForList().rightPushAll("new_songs", newSongs);
+        redisTemplate.expire("new_songs", 1, TimeUnit.HOURS);
     }
 
     @Override

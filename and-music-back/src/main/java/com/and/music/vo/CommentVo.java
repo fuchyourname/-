@@ -3,9 +3,7 @@ package com.and.music.vo;
 
 import com.and.music.domain.Comments;
 import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -14,13 +12,28 @@ import java.util.List;
 
 @Data
 @Accessors(chain = true)
-public class DynamicsVo {
+public class CommentVo {
 
-    private Integer dynamicId;
+    private Integer commentId;
+
+    private Integer userId;
+
     private String userName;
-    private String userAvatar;
+
+    private String userPic;
+
+    private Integer otherId;
+
+    private Integer parentId;
+
     private String content;
-    private SongVo song;
+
     private Date createTime;
+
+    private Integer likeCount; // 评论点赞数
+
+    // 回复数
+    private Integer replyCount;
+
     private List<CommentVo> comments;
 }

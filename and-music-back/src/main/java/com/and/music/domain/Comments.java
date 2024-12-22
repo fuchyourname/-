@@ -31,7 +31,7 @@ public class Comments implements Serializable {
 
     private Integer otherId;
 
-    // 1**歌曲，2**专辑，3**歌单，4**评论
+    // 1**歌曲，2**专辑，3**歌单，4**评论 5**动态
     private Integer type;
 
     private Integer parentId;

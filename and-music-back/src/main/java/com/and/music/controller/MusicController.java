@@ -1,13 +1,12 @@
 package com.and.music.controller;
 
 import com.and.music.common.R;
+import com.and.music.domain.Playlists;
 import com.and.music.domain.Songs;
 import com.and.music.dto.FileDto;
 import com.and.music.dto.PageInfo;
-import com.and.music.service.GenresService;
-import com.and.music.service.LikesService;
-import com.and.music.service.SongsService;
-import com.and.music.service.UsersService;
+import com.and.music.service.*;
+import com.and.music.vo.PlaylistVo;
 import com.and.music.vo.SongVo;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +25,8 @@ public class MusicController {
     private final GenresService genresService;
 
     private final LikesService likesService;
+
+    private final PlaylistsService playlistsService;
 
     // 点赞歌曲
     @GetMapping("/like")
@@ -58,13 +59,21 @@ public class MusicController {
     @GetMapping("/hot")
     public R getHotSongs() {
         List<SongVo> hotSongs = songsService.getHotSongsFromCache();
-        return R.ok(hotSongs);
+        Playlists playlists = playlistsService.getById(2);
+        PlaylistVo playlistVo = new PlaylistVo();
+        playlistVo.setName(playlists.getName()).setSongs(hotSongs);
+        playlistVo.setDescription(playlists.getDescription());
+        return R.ok(playlistVo);
     }
 
     @GetMapping("/new")
     public R getNewSongs() {
         List<SongVo> newSongs = songsService.getNewSongsFromCache();
-        return R.ok(newSongs);
+        Playlists playlists = playlistsService.getById(3);
+        PlaylistVo playlistVo = new PlaylistVo();
+        playlistVo.setName(playlists.getName()).setSongs(newSongs);
+        playlistVo.setDescription(playlists.getDescription());
+        return R.ok(playlistVo);
     }
     // 音乐上传
     @PostMapping("/upload")

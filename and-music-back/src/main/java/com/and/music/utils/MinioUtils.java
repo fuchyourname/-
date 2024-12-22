@@ -33,6 +33,17 @@ public class MinioUtils {
     private MinioProperties minioProperties;
 
     /*
+    下载文件
+     */
+    public InputStream getObject(String bucketName, String objectName) {
+        try {
+            return minioClient.getObject(GetObjectArgs.builder().bucket(bucketName).object(objectName).build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /*
     删除文件
      */
     public void removeObject(String bucketName, String objectName) {

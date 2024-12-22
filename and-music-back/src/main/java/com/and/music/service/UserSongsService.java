@@ -9,6 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface UserSongsService extends IService<UserSongs> {
 
+    // 下载歌曲
+    R download(Integer songId);
     // 添加歌曲
     R addUserSongs(MultipartFile File);
 

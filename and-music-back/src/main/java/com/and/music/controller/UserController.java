@@ -57,6 +57,12 @@ public class UserController {
         return followService.removeFollow(followUserId);
     }
 
+    // 用户下载歌曲
+    @GetMapping("/download/{songId}")
+    public R download(@PathVariable("songId") Integer songId) {
+        return userSongsService.download(songId);
+    }
+
     // 用户上传音乐
     @PostMapping("/uploadSong")
     public R uploadSong(@RequestParam("file") MultipartFile file) {
