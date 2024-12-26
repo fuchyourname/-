@@ -3,6 +3,7 @@
         <div class="px-4 py-4 sm:px-6 sm:py-4 mb-24">
             <!-- 图片和文字在同一行 -->
             <div class="flex mb-8">
+                <img class="inline-block h-40 w-40 rounded-md mr-4" :src="playlist.imageUrl" alt="" />
                 <div>
                     <h3 class="text-lg font-medium text-gray-900">{{ playlist.name }}</h3>
                     <p class="mt-1 text-sm text-gray-600">{{ playlist.description }}</p>
@@ -146,10 +147,11 @@ const addToPlaylist = async (playlistId) => {
 };
 const fetchPlaylistData = async () => {
     // 清空歌曲列表
+    playlist.value = {};
     songs.value = [];
     try {
         let response;
-        if (type.value === 1) {
+        if (type.value == 1) {
             response = axios.get('/api/music/hot')
         } else {
             response = axios.get('/api/music/new')

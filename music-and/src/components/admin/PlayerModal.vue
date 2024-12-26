@@ -145,7 +145,9 @@ const closeModal = () => {
 const saveArtist = async () => {
   try {
     const formDataToSend = new FormData()
-    formDataToSend.append('artistId', props.artist.artistId)
+    if (props.artist.artistId) {
+      formDataToSend.append('artistId', props.artist.artistId)
+    }
     formDataToSend.append('name', formData.value.name)
     formDataToSend.append('nationality', formData.value.nationality)
     formDataToSend.append('sex', formData.value.type.toString())
@@ -159,7 +161,7 @@ const saveArtist = async () => {
         'Content-Type': 'multipart/form-data'
       }
     })
-    emit('save', response.data)
+    emit('save', response.data.data)
     closeModal()
   } catch (error) {
     console.error("Failed to save artist:", error)

@@ -8,4 +8,5 @@ public class FileVo {
     private String fileName;
     private String file;
     private String fileType;
+    private String fileSize;
 }

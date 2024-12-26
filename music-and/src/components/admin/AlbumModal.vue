@@ -15,12 +15,12 @@
                     <input type="text" id="artist" v-model="formData.artist"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         @input="searchArtists" required />
-                    <ul v-if="searchResults.length" class="mt-2 border border-gray-300 rounded-md shadow-sm">
+                    <!-- <ul v-if="searchResults.length" class="mt-2 border border-gray-300 rounded-md shadow-sm">
                         <li v-for="artist in searchResults" :key="artist.id" class="px-3 py-2 cursor-pointer hover:bg-gray-100"
                             @click="selectArtist(artist)">
                             {{ artist.name }}
                         </li>
-                    </ul>
+                    </ul> -->
                 </div>
                 <div class="mb-4">
                     <label for="releaseDate" class="block text-sm font-medium text-gray-700">发布时间</label>
@@ -30,7 +30,7 @@
                 </div>
                 <div class="mb-4">
                     <label for="genre" class="block text-sm font-medium text-gray-700">类别</label>
-                    <select id="genre" v-model="formData.genre"
+                    <select id="genre" v-model="formData.type"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         required>
                         <option v-for="genre in genres" :key="genre.genreId" :value="genre.genreId">
@@ -129,6 +129,17 @@ watch(
     }
 )
 
+watch(
+    () => formData.value.artist,
+    (newValue) => {
+        if (newValue.length >= 3) { // 设置一个阈值，避免频繁请求
+            searchArtists(newValue);
+        } else {
+            searchResults.value = [];
+        }
+    }
+)
+
 const closeModal = () => {
     show.value = false
 }
@@ -138,9 +149,8 @@ const saveAlbum = async () => {
         const formDataToSend = new FormData()
         formDataToSend.append('albumId', formData.value.albumId)
         formDataToSend.append('title', formData.value.title)
-        // formDataToSend.append('artist', formData.value.artist)
         formDataToSend.append('releaseDate', formData.value.createTime)
-        formDataToSend.append('type', formData.value.genre)
+        formDataToSend.append('type', formData.value.type)
         formDataToSend.append('description', formData.value.description)
         if (formData.value.imageFile) {
             formDataToSend.append('coverImage', formData.value.imageFile)
@@ -180,21 +190,17 @@ const fetchGenres = async () => {
     }
 }
 
-const searchArtists = async () => {
-    if (isEditing.value) return // 如果是编辑状态，不进行搜索
-    if (formData.value.artist.length < 3) {
-        searchResults.value = []
-        return
+const searchArtists = async (artistName) => {
+    // if (isEditing.value) return; // 如果是编辑状态，不进行搜索
+    if (!artistName || artistName.length < 3) {
+        searchResults.value = [];
+        return;
     }
     try {
-        const response = await axios.get('/api/artist/search', {
-            params: {
-                query: formData.value.artist
-            }
-        })
-        searchResults.value = response.data.data
+        const response = await axios.get(`/api/player/getPlayerByName/${artistName}`);
+        searchResults.value = response.data.data;
     } catch (error) {
-        console.error("Failed to search artists:", error)
+        console.error("Failed to search artists:", error);
     }
 }
 

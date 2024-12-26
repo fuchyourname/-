@@ -161,7 +161,7 @@ public class DynamicsServiceImpl extends ServiceImpl<DynamicsMapper, Dynamics>
                              List<Integer> allCommentIds
                              ) {
         LambdaQueryWrapper<Comments> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(Comments::getCommentId, oldCommentIds);
+        queryWrapper.in(Comments::getOtherId, oldCommentIds);
         queryWrapper.eq(Comments::getType, 4);
         List<Comments> commentsList = commentsMapper.selectList(queryWrapper);
         if (ObjectUtil.isEmpty(commentsList)) {
@@ -213,6 +213,10 @@ public class DynamicsServiceImpl extends ServiceImpl<DynamicsMapper, Dynamics>
             }
             parentComment.setReplyCount(childComment.size());
             parentComment.setComments(childComment);
+            childComment.forEach(commentVo -> {
+                commentVo.setReplyCount(0);
+                commentVo.setComments(new ArrayList<>());
+            });
         }
         return parentCommentList;
     }

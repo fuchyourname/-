@@ -138,7 +138,7 @@ const products = [
   { name: '音乐首页', description: 'Explore the latest music trends', href: '/home/index', icon: HomeIcon },
   { name: '歌手列表', description: 'Discover a wide range of artists', href: '/home/player', icon: UserGroupIcon }, // 修改了描述
   { name: '音乐分类', description: 'Browse music by different genres', href: '/home/category', icon: FolderIcon }, // 修改了描述
-  { name: '音乐排行榜', description: 'View the latest music rankings', href: '#', icon: ChartBarIcon },
+  { name: '音乐排行榜', description: 'View the latest music rankings', href: '/home/rankList', icon: ChartBarIcon },
 ]
 const callsToAction = [
   { name: 'Watch demo', href: '#', icon: PlayCircleIcon },

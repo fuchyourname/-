@@ -1,4 +1,3 @@
-<!-- src/views/admin/PicListView.vue -->
 <template>
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
@@ -22,8 +21,12 @@
     </div>
     <div class="mt-1">
       <div v-if="filteredPictures.length > 0" class="grid grid-cols-5 gap-4">
-        <div v-for="picture in filteredPictures" :key="picture" class="bg-white p-4 rounded-lg shadow-md">
-          <img :src="picture" alt="" class="w-full h-48 object-cover rounded-lg transition-transform duration-300 hover:scale-110" />
+        <div v-for="picture in filteredPictures" :key="picture.file" class="bg-white p-4 rounded-lg shadow-md relative">
+          <img :src="picture.file" alt="" class="w-full h-48 object-cover rounded-lg transition-transform duration-300 hover:scale-110" />
+          <div class="mt-2">
+            <p class="text-gray-700 font-semibold truncate" :title="picture.fileName">{{ picture.fileName }}</p>
+            <p class="text-gray-500">{{ picture.fileSize }}</p>
+          </div>
         </div>
       </div>
       <div v-else class="text-center mt-8">
@@ -49,7 +52,7 @@ const fetchPictures = async () => {
     const response = await axios.post('/api/index/getImgList', {
       type: parseInt(filterType.value),
     })
-    pictures.value = response.data.data
+    pictures.value = response.data.data // 确保数据结构包含 name 和 size
   } catch (error) {
     console.error('Error fetching pictures:', error)
   }
@@ -67,4 +70,29 @@ watch(filterType, (newVal, oldVal) => {
 
 <style scoped>
 /* Add any additional styles here */
+.grid-cols-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+/* Tooltip styles */
+.truncate::after {
+  content: attr(title);
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  width: 100%;
+  background-color: black;
+  color: white;
+  padding: 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.truncate:hover::after {
+  opacity: 1;
+}
 </style>

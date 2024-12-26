@@ -235,8 +235,6 @@ const handleSaveArtist = (artist) => {
       artists.value[index] = artist
     }
   } else {
-    // Add new artist
-    artist.id = artists.value.length + 1
     artists.value.push(artist)
   }
   isModalOpen.value = false

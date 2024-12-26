@@ -46,15 +46,35 @@
   </div>
   <audio ref="audioPlayer" @play="onPlay" @pause="onPause" @timeupdate="onTimeUpdate" @loadedmetadata="onLoadedMetadata" @error="handleAudioError"></audio>
   <PlayList v-if="isOpen" :isOpen="isOpen" :close="togglePlayList" @close="togglePlayList" />
-  <LyricsList v-if="showLyricsOverlay" :showLyricsOverlay="showLyricsOverlay"
-   :audioPlayer="audioPlayer" :currentSong="currentSong" @hide="hideLyrics" />
+  <div v-if="showLyricsOverlay" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-80 z-49 lyrics-overlay">
+    <div class="p-4 rounded-lg relative flex flex-row">
+      <img :src="currentSong.coverPath" class="ml-32 mt-24 w-1/4 h-1/4 mb-4 rounded-lg">
+      <div class="ml-80 flex flex-col text-center mt-20">
+        <div class="mb-4">
+          <p class="text-xl font-bold text-white">{{ currentSong.title }}</p>
+          <p class="text-lg text-white">{{ currentSong.artist }}</p>
+        </div>
+        <div class="lyrics-container overflow-y-auto max-h-96 text-gray-400">
+          <p v-for="(line, index) in parsedLyrics" :key="index" :class="{ 'active-line': index === currentLine }">
+            {{ line.text }}
+          </p>
+        </div>
+      </div>
+      <!-- 关闭按钮，使用图标并定位到右上角 -->
+      <button class="absolute top-2 right-2 text-white rounded p-2" @click="hideLyrics">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import axios from 'axios';
 import { useMusicStore } from '../stores/useMusicStore';
 import PlayList from './play/PlayList.vue';
-import LyricsList from './play/LyricsList.vue';
 
 const musicStore = useMusicStore();
 const audioPlayer = ref(null);
@@ -68,8 +88,12 @@ const isOpen = ref(false);
 
 const showLyricsOverlay = ref(false);
 
+const parsedLyrics = ref([{ time: 0, text: '歌词加载中...' }]);
+const currentLine = ref(0);
+
 const showLyrics = () => {
-  showLyricsOverlay.value = !showLyricsOverlay.value; 
+  showLyricsOverlay.value = !showLyricsOverlay.value;
+  fetchLyrics();
 };
 
 const hideLyrics = () => {
@@ -103,8 +127,78 @@ const currentTimePercentage = computed({
   }
 });
 
+const fetchLyrics = () => {
+  const lyricsUrl = musicStore.getCurrentMusic().lyricPath;
+  axios.get(lyricsUrl)
+    .then(response => {
+      if (response.data && response.data) {
+        parseLyrics(response.data);
+      } else {
+        parsedLyrics.value = [{ time: 0, text: '歌词加载失败' }];
+      }
+    })
+    .catch(error => {
+      parsedLyrics.value = [{ time: 0, text: '歌词加载失败' }];
+    });
+};
+
+const parseLyrics = (lrcContent) => {
+  const regex = /\[(\d{2}):(\d{2})\.(\d{2})\](.*)/;
+  const lines = [];
+
+  lrcContent.split('\n').forEach(line => {
+    const match = line.match(regex);
+    if (match) {
+      const minutes = parseInt(match[1], 10);
+      const seconds = parseInt(match[2], 10);
+      const milliseconds = parseInt(match[3], 10);
+      const totalTimeInSeconds = minutes * 60 + seconds + milliseconds / 100;
+      const text = match[4].trim();
+      if (text) {
+        lines.push({ time: totalTimeInSeconds, text });
+      }
+    }
+  });
+
+  parsedLyrics.value = lines;
+  currentLine.value = 0;
+};
+
+const updateCurrentLine = () => {
+  const audio = audioPlayer.value;
+  if (!audio) return;
+
+  const currentTime = audio.currentTime;
+  const parsedLyricsValue = parsedLyrics.value;
+
+  const index = parsedLyricsValue.findIndex(line => line.time > currentTime);
+  currentLine.value = index === -1 ? parsedLyricsValue.length - 1 : index - 1;
+
+  const lyricsContainer = document.querySelector('.lyrics-container');
+  const activeLine = document.querySelector('.active-line');
+  if (activeLine && lyricsContainer) {
+    const activeLineRect = activeLine.getBoundingClientRect();
+    const containerRect = lyricsContainer.getBoundingClientRect();
+    const lineHeight = activeLine.offsetHeight;
+
+    const scrollTop = activeLineRect.top - containerRect.top - (containerRect.height - lineHeight) / 2;
+    lyricsContainer.scrollTop = scrollTop;
+  }
+};
+
+watch(musicStore.getIsPaused, () => {
+  if (musicStore.getIsPaused) {
+    audioPlayer.value.pause();
+  } else {
+    audioPlayer.value.play().catch(error => {
+      console.error('Failed to play the audio:', error);
+    });
+  }
+});
+
 const playSong = () => {
   if (audioPlayer.value.paused) {
+    musicStore.setIsPaused(false);
     audioPlayer.value.play().catch(error => {
       console.error('Failed to play the audio:', error);
     });
@@ -131,6 +225,7 @@ const onPause = () => {
 
 const onTimeUpdate = () => {
   currentTime.value = audioPlayer.value.currentTime;
+  updateCurrentLine();
 };
 
 const onLoadedMetadata = () => {
@@ -162,6 +257,7 @@ watch(currentSong, async () => {
 
     // 如果之前正在播放，则自动播放新歌曲
     if (isPlaying.value) {
+      musicStore.setIsPaused(false);
       await audioPlayer.value.play();
     }
   } catch (error) {
@@ -203,5 +299,26 @@ onBeforeUnmount(() => {
   background: #4299e1;
   border-radius: 50%;
   cursor: pointer;
+}
+
+.lyrics-overlay {
+  animation: slideInFromBottomLeft 0.5s forwards;
+}
+
+@keyframes slideInFromBottomLeft {
+  from {
+    transform: translate(-100%, 100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+.active-line {
+  color: yellow; /* 设置当前行的字体颜色 */
+  font-weight: bold; /* 可选：加粗当前行的字体 */
 }
 </style>

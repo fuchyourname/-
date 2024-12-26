@@ -80,6 +80,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
                         .setUsername(user.getUserName())
                         .setAvatar(user.getPicUrl())
                         .setNationality(user.getNationality())
+                        .setDescription(user.getDescription())
                         .setFansCount(fansCount)
                         .setFollowCount(followCount);
                 if (StringUtils.equals(user.getUserName(), CommonConstants.ADMIN_USERNAME)) {
@@ -111,7 +112,37 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
 
     @Override
     public R saveUser(UserDto userDto) {
-        return null;
+
+        Users users = new Users();
+        users.setUserName(userDto.getUserName());
+        users.setDescription(userDto.getDescription());
+        users.setNationality(userDto.getNationality());
+        users.setCreateUser(UserContext.getUser().getUserId());
+        users.setType(userDto.getType());
+        users.setEmail(userDto.getEmail());
+        if (ObjectUtil.isNotEmpty(userDto.getPic())) {
+            try {
+                MultipartFile pl = userDto.getPic();
+                if (pl != null) {
+                    // 上传歌曲图片
+                    FileDto fileDto = new FileDto();
+                    fileDto.setMusicPic(pl);
+                    fileDto.setGenreId(5);
+                    String objectPath = PathUtils.getCoverPath(fileDto, users.getUserId());
+
+                    String coverUrl = minioUtils.putObject(minioProperties.getBucket(),
+                            objectPath, fileDto.getMusicPic());
+                    users.setPicUrl(coverUrl);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException("上传失败");
+            }
+        }
+        if (this.save(users)) {
+            return R.ok(users);
+        }
+        return R.fail("添加失败");
     }
 
     @Override
@@ -121,6 +152,9 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         }
         if (ObjectUtil.isEmpty(userDto.getUserId())) {
             return R.fail("参数错误");
+        }
+        if (ObjectUtil.isEmpty(userDto.getUserId())) {
+            return saveUser(userDto);
         }
         Users users = this.baseMapper.selectById(userDto.getUserId());
         users.setDescription(userDto.getDescription());

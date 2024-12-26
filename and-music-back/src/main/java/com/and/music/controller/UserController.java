@@ -2,14 +2,12 @@ package com.and.music.controller;
 
 import com.and.music.common.R;
 import com.and.music.domain.Users;
+import com.and.music.dto.CommentDto;
 import com.and.music.dto.DynamicsDto;
 import com.and.music.dto.PageInfo;
 import com.and.music.dto.UserDto;
 import com.and.music.mapper.UsersMapper;
-import com.and.music.service.DynamicsService;
-import com.and.music.service.FollowService;
-import com.and.music.service.UserSongsService;
-import com.and.music.service.UsersService;
+import com.and.music.service.*;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,14 +27,22 @@ public class UserController {
 
     private final FollowService followService;
 
+    private final CommentsService commentsService;
+
+    // 用户评论
+    @PostMapping("/addComments")
+    public R addComments(@RequestBody CommentDto commentDto) {
+        return commentsService.addComments(commentDto);
+    }
+
     // 关注歌手
-    @PostMapping("/addFollowSinger")
-    public R addFollowSinger(@RequestParam("followSingerId") Integer followSingerId) {
+    @GetMapping("/addFollowSinger/{followSingerId}")
+    public R addFollowSinger(@PathVariable("followSingerId") Integer followSingerId) {
         return followService.addSinger(followSingerId);
     }
     // 取消关注歌手
-    @PostMapping("/removeFollowSinger")
-    public R removeFollowSinger(@RequestParam("followSingerId") Integer followSingerId) {
+    @GetMapping("/removeFollowSinger/{followSingerId}")
+    public R removeFollowSinger(@PathVariable("followSingerId") Integer followSingerId) {
         return followService.removeSinger(followSingerId);
     }
 
@@ -76,7 +82,8 @@ public class UserController {
 
     // 修改用户信息
     @PostMapping("/updateUser")
-    public R updateUser(@RequestParam("userId") Integer userId,
+    public R saveOrUpdateUser(
+            @RequestParam(name = "userId", required = false) Integer userId,
                         @RequestParam("userName") String userName,
                         @RequestParam("description") String description,
                         @RequestParam("nationality") String nationality,

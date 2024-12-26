@@ -1,9 +1,11 @@
 package com.and.music.controller;
 
 import com.and.music.common.R;
+import com.and.music.dto.GenreDto;
 import com.and.music.dto.PageInfo;
 import com.and.music.dto.UserDto;
 import com.and.music.service.GenresService;
+import com.and.music.service.PlaylistsService;
 import com.and.music.service.UsersService;
 import com.and.music.utils.MinioUtils;
 import lombok.AllArgsConstructor;
@@ -25,6 +27,28 @@ public class IndexController {
     private final MinioUtils minioUtils;
 
     private final GenresService genreService;
+
+    private final PlaylistsService playlistsService;
+    // 获取排行榜
+    @GetMapping("/getRankList")
+    public R getRankList() {
+        return playlistsService.getRankList();
+    }
+
+    // 增加分类
+    @PostMapping("/addGenres")
+    public R saveOrUpdateGenres(
+                        @RequestParam(name = "genreId", required = false) Integer genreId,
+                        @RequestParam("name") String name,
+                       @RequestParam("description") String description,
+                       @RequestParam("type") Integer type) {
+        GenreDto genreDto = new GenreDto()
+                .setGenreId(genreId)
+                .setName(name)
+                .setDescription(description)
+                .setType(type);
+        return genresService.addGenres(genreDto);
+    }
 
     // 分页获取分类信息
     @PostMapping("/getGenresPage")
@@ -76,8 +100,7 @@ public class IndexController {
 
         if (minioUtils.bucketExists("music")) {
             String objectName = "cover/" + pageInfo.getType();
-            return R.ok(minioUtils.getAllImgList("music"
-                    , objectName));
+            return R.ok(minioUtils.getAllFiles("music" , objectName));
         }
         return null;
     }

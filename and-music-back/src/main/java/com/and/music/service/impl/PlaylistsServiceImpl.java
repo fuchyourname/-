@@ -9,6 +9,7 @@ import com.and.music.dto.PageInfo;
 import com.and.music.dto.PlaylistDto;
 import com.and.music.mapper.*;
 import com.and.music.service.PlaylistsService;
+import com.and.music.service.SongsService;
 import com.and.music.utils.MinioUtils;
 import com.and.music.utils.PathUtils;
 import com.and.music.utils.UserContext;
@@ -61,7 +62,39 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
     @Resource
     private GenresMapper genresMapper;
     @Resource
+    private SongsService songService;
+    @Resource
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Override
+    public R getRankList() {
+
+        LambdaQueryWrapper<Playlists> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Playlists::getType, 0)
+                .eq(Playlists::getUserId, 1)
+                .orderByDesc(Playlists::getCreateTime);
+        List<Playlists> playlistsList = this.baseMapper.selectList(queryWrapper);
+        if (ObjectUtil.isEmpty(playlistsList)) {
+            return R.ok(new ArrayList<>());
+        }
+        List<PlaylistVo> playlistVoList = new ArrayList<>();
+        for (Playlists playlists : playlistsList) {
+            PlaylistVo playlistVo = new PlaylistVo();
+            playlistVo.setPlaylistId(playlists.getPlaylistId());
+            playlistVo.setName(playlists.getName())
+                    .setDescription(playlists.getDescription())
+                    .setImageUrl(playlists.getImageUrl());
+            if (ObjectUtil.equal(playlists.getPlaylistId(), 2)) {
+                playlistVo.setSongs(songService.getHotSongsFromCache());
+            }else if (ObjectUtil.equal(playlists.getPlaylistId(), 3)) {
+                playlistVo.setSongs(songService.getNewSongsFromCache());
+            } else {
+                playlistVo.setSongs(new ArrayList<>());
+            }
+            playlistVoList.add(playlistVo);
+        }
+        return R.ok(playlistVoList);
+    }
 
     @Override
     public R addSong(Integer songId, Integer playlistId) {
@@ -152,6 +185,9 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
         if (ObjectUtil.isEmpty(name)) {
             return R.fail("歌单名称不能为空");
         }
+        if (ObjectUtil.isNotEmpty(playlistDto.getPlaylistId())) {
+            return updatePlaylists(playlistDto);
+        }
         List<Playlists> playlistsList =
                 list(new QueryWrapper<Playlists>().eq("name", name));
         if (ObjectUtil.isNotEmpty(playlistsList)) {
@@ -161,6 +197,11 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
         playlists.setName(name);
         playlists.setDescription(playlistDto.getDescription());
         playlists.setUserId(UserContext.getUser().getUserId());
+        playlists.setType(1);
+        playlists.setCreateUser(UserContext.getUser().getUserId());
+        playlists.setUpdateUser(UserContext.getUser().getUserId());
+        playlists.setSongCount(0);
+        playlists.setPlayCount(0L);
         if (ObjectUtil.isEmpty(playlistDto.getType())) {
             playlists.setStatus(1);
         }
@@ -199,6 +240,7 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
         playlists.setName(playlistDto.getName());
         playlists.setDescription(playlistDto.getDescription());
         playlists.setUpdateUser(UserContext.getUser().getUserId());
+
         if (ObjectUtil.isNotEmpty(playlistDto.getImage())) {
             try {
                 // http://192.168.154.1:9000/music/cover/1/27_1732354594609.jpg
@@ -231,7 +273,7 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
         LambdaQueryWrapper<Playlists> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(ObjectUtil.isNotEmpty(pageInfo.getName()), Playlists::getName, pageInfo.getName())
                 .eq(Playlists::getStatus, 1)
-                .ne(Playlists::getType, 0)
+//                .ne(Playlists::getType, 0)
                 .orderByDesc(Playlists::getPlayCount);
         Page<Playlists> page = new Page<>(pageInfo.getPageNum(), pageInfo.getPageSize());
         page(page, queryWrapper);
@@ -250,7 +292,8 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
                     .setPlayCount(playlists.getPlayCount())
                     .setDescription(playlists.getDescription())
                     .setImageUrl(playlists.getImageUrl())
-                    .setType(genresMap.get(playlists.getType()).getName())
+                    .setType(ObjectUtil.isNotEmpty(genresMap.get(playlists.getType())) ?
+                            genresMap.get(playlists.getType()).getName() : "")
                     .setSongCount(playlists.getSongCount())
                     ;
         }).collect(Collectors.toList());

@@ -14,7 +14,9 @@ import com.and.music.utils.MinioUtils;
 import com.and.music.utils.PathUtils;
 import com.and.music.utils.PinyinUtil;
 import com.and.music.utils.UserContext;
+import com.and.music.vo.AlbumVo;
 import com.and.music.vo.SingerVo;
+import com.and.music.vo.SongVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -69,7 +72,26 @@ public class ArtistsServiceImpl extends ServiceImpl<ArtistsMapper, Artists>
         LambdaQueryWrapper<Songs> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Songs::getArtistId, artistId);
         List<Songs> songsList = songsMapper.selectList(queryWrapper);
-        return R.ok(songsList);
+        if (ObjectUtil.isEmpty(songsList)) {
+            return R.ok(new ArrayList<>());
+        }
+        List<Integer> artistIds = songsList.stream().map(Songs::getArtistId).collect(Collectors.toList());
+        List<Artists> artistsList = this.baseMapper.selectBatchIds(artistIds);
+        Map<Integer, Artists> artistMap = artistsList.stream().collect(Collectors.toMap(Artists::getArtistId, v -> v));
+        List<Integer> albumIds = songsList.stream().map(Songs::getAlbumId).collect(Collectors.toList());
+        List<Albums> albumsList = albumsMapper.selectBatchIds(albumIds);
+        Map<Integer, Albums> albumMap = albumsList.stream().collect(Collectors.toMap(Albums::getAlbumId, v -> v));
+        List<SongVo> songsListVo = songsList.stream().map(song -> {
+            return new SongVo()
+                    .setSongId(song.getSongId())
+                    .setTitle(song.getTitle())
+                    .setArtist(artistMap.get(song.getArtistId()).getName())
+                    .setAlbum(albumMap.get(song.getAlbumId()).getTitle())
+                    .setGenre(genresMapper.selectById(song.getGenreId()).getName())
+                    .setDuration(song.getDuration())
+                    .setCoverPath(song.getCoverPath());
+        }).collect(Collectors.toList());
+        return R.ok(songsListVo);
     }
 
     @Override
@@ -81,7 +103,23 @@ public class ArtistsServiceImpl extends ServiceImpl<ArtistsMapper, Artists>
         LambdaQueryWrapper<Albums> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Albums::getArtistId, artistId);
         List<Albums> albumsList = albumsMapper.selectList(queryWrapper);
-        return R.ok(albumsList);
+        if (ObjectUtil.isEmpty(albumsList)) {
+            return R.ok(new ArrayList<>());
+        }
+        List<Integer> artistIds = albumsList.stream().map(Albums::getArtistId).collect(Collectors.toList());
+        List<Artists> artistsList = this.baseMapper.selectBatchIds(artistIds);
+        Map<Integer, Artists> artistMap = artistsList.stream().collect(Collectors.toMap(Artists::getArtistId, v -> v));
+        List<AlbumVo> albumsListVo = albumsList.stream().map(album -> {
+            return new AlbumVo()
+                    .setAlbumId(album.getAlbumId())
+                    .setTitle(album.getTitle())
+                    .setArtist(artistMap.get(album.getArtistId()).getName())
+                    .setCoverImage(album.getCoverImage())
+                    .setDescription(album.getDescription())
+                    .setSongCount(album.getSongCount())
+                    .setPlayCount(album.getPlayCount());
+        }).collect(Collectors.toList());
+        return R.ok(albumsListVo);
     }
 
     @Override
@@ -124,7 +162,7 @@ public class ArtistsServiceImpl extends ServiceImpl<ArtistsMapper, Artists>
             if (pl != null) {
                 // 上传歌曲图片
                 String bucketName = "music";
-                String objectPath = "cover/" + 1 + "/" + artists.getArtistId() + ".jpg";
+                String objectPath = "cover/" + 2 + "/" + artists.getArtistId() + ".jpg";
 
                 if (!minioUtils.bucketExists(bucketName)) {
                     minioUtils.createBucket(bucketName);
@@ -151,7 +189,7 @@ public class ArtistsServiceImpl extends ServiceImpl<ArtistsMapper, Artists>
             return R.fail("参数错误");
         }
         if (ObjectUtil.isEmpty(artistDto.getArtistId())) {
-            return R.fail("参数错误");
+            return addArtist(artistDto);
         }
         Artists artists = getById(artistDto.getArtistId());
         artists.setName(artistDto.getName());

@@ -182,8 +182,6 @@ const handleSavePlaylist = (playlist) => {
       playlists.value[index] = playlist
     }
   } else {
-    // Add new playlist
-    playlist.id = playlists.value.length + 1
     playlists.value.push(playlist)
   }
   isModalOpen.value = false

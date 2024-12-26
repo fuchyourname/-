@@ -27,12 +27,14 @@ public class PlayListController {
 
     // 新增
     @PostMapping("/add")
-    public R add(
+    public R addOrUpdate(
+            @RequestParam(name = "playlistId", required = false) Integer playlistId,
             @RequestParam("name") String name,
             @RequestParam("description") String description,
-            @RequestParam("image") MultipartFile image) {
+            @RequestParam(name = "image", required = false) MultipartFile image) {
 
         PlaylistDto playlistDto = new PlaylistDto();
+        playlistDto.setPlaylistId(playlistId);
         playlistDto.setName(name);
         playlistDto.setDescription(description);
         playlistDto.setImage(image);

@@ -26,7 +26,7 @@
     <!-- 子评论输入框 -->
     <div v-if="comment.showComments" class="mt-4 ml-16">
       <div class="flex items-center">
-        <img :src="comment.userPic" alt="User Avatar" class="w-8 h-8 mr-3 rounded-full">
+        <img :src="user.avatar" alt="User Avatar" class="w-8 h-8 mr-3 rounded-full">
         <input v-model="comment.newComment" @keyup.enter="addSubComment" type="text" placeholder="添加评论..." class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
       </div>
     </div>
@@ -39,6 +39,7 @@
 </template>
 
 <script setup>
+import axios from 'axios'
 import { ref } from 'vue'
 import CommentItem from './CommentItem.vue'
 
@@ -46,13 +47,21 @@ const props = defineProps({
   comment: Object
 })
 
+const user = JSON.parse(localStorage.getItem('user'))
+
 const emit = defineEmits(['like', 'add-comment', 'toggle-comment-comments', 'like-sub-comment'])
 
 const addSubComment = async () => {
   if (props.comment.newComment.trim()) {
     try {
-      await axios.post(`/api/user/addSubComment/${props.comment.id}`, { content: props.comment.newComment }) // 替换为你的API端点
+      await axios.post(`/api/user/addComments/`, {
+        parentId: props.comment.commentId,
+        otherId: props.comment.commentId,
+        content: props.comment.newComment,
+        type: 4
+      }) // 替换为你的API端点
       emit('add-comment', props.comment, props.comment.newComment)
+      props.comment.newComment = ''
     } catch (error) {
       console.error('添加子评论失败:', error)
     }

@@ -23,6 +23,10 @@ public class AlbumVo {
 
     private String description;
 
+    private Integer songCount;
+
+    private Long playCount;
+
     private String createUser;
 
     private Date createTime;

@@ -42,7 +42,7 @@
   <select id="genre" v-model="formData.genre"
     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
     required>
-    <option v-for="genre in genres" :key="genre.id" :value="genre.name">
+    <option v-for="genre in genres" :key="genre.genreId" :value="genre.genreId">
       {{ genre.name }}
     </option>
   </select>
@@ -220,23 +220,23 @@ const saveMusic = async () => {
     formDataToSend.append('title', formData.value.title)
     formDataToSend.append('artistId', formData.value.artistId)
     formDataToSend.append('albumId', formData.value.albumId)
-    formDataToSend.append('genre', formData.value.genre)
+    formDataToSend.append('genreId', formData.value.genre)
     if (formData.value.coverImageFile) {
-      formDataToSend.append('coverImage', formData.value.coverImageFile)
+      formDataToSend.append('musicPic', formData.value.coverImageFile)
     }
     if (formData.value.musicFile) {
       formDataToSend.append('musicFile', formData.value.musicFile)
     }
     if (formData.value.lyricsFile) {
-      formDataToSend.append('lyricsFile', formData.value.lyricsFile)
+      formDataToSend.append('lyricFile', formData.value.lyricsFile)
     }
 
-    const response = await axios.post('/api/music/addMusic', formDataToSend, {
+    const response = await axios.post('/api/music/upload', formDataToSend, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     })
-    emit('save', response.data)
+    emit('save', response.data.data)
     closeModal()
   } catch (error) {
     console.error("Failed to save music:", error)
@@ -297,13 +297,13 @@ const fetchAlbums = async () => {
 }
 
 const selectArtist = (artist) => {
-  formData.value.artistId = artist.id
+  formData.value.artistId = artist.artistId
   searchArtistQuery.value = artist.name
   artists.value = []
 }
 
 const selectAlbum = (album) => {
-  formData.value.albumId = album.id
+  formData.value.albumId = album.albumId
   searchAlbumQuery.value = album.title
   albums.value = []
 }

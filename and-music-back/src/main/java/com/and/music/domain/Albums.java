@@ -37,6 +37,8 @@ public class Albums implements Serializable {
 
     private Integer createUser;
 
+    private Integer songCount;
+
     private Long playCount;
 
     @TableField(fill = FieldFill.INSERT)

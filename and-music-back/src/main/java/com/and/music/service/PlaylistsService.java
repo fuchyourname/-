@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 */
 public interface PlaylistsService extends IService<Playlists> {
 
+     // 获取所有的排行榜信息
+    public R getRankList();
+
     // 添加歌曲到歌单
     public R addSong(Integer songId, Integer playlistId);
 

@@ -68,7 +68,7 @@ const fetchArtistDetails = async () => {
 const toggleFollow = async () => {
   try {
     const action = isFollowing.value ? 'removeFollowSinger' : 'addFollowSinger'
-    await axios.post(`/api/user/${action}`, {}, { params: { followUserId: artistId } }) // 使用 artistId 发送请求
+    await axios.get(`/api/user/${action}/${artistId}`) // 使用 artistId 发送请求
     isFollowing.value = !isFollowing.value
   } catch (error) {
     console.error('Error toggling follow:', error)

@@ -83,7 +83,8 @@ const fetchPostsByCategory = async (categoryId) => {
             { 
                 type: categoryId, 
             } 
-        });
+        }); 
+        posts.value = [];
         posts.value = response.data.data.map(post => ({
             ...post,
             href: `/home/songlistdetails/${post.playlistId}` // 添加 href 属性

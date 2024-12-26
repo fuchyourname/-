@@ -115,14 +115,19 @@ const savePlaylist = async () => {
 
         // 创建 FormData 对象
         const formDataToSend = new FormData()
-        formDataToSend.append('playlistId', dataToSend.playlistId)
+        if (dataToSend.playlistId !== undefined && dataToSend.playlistId !== null
+            && dataToSend.playlistId !== ''
+        ) {
+            formDataToSend.append('playlistId', dataToSend.playlistId)
+        }
         formDataToSend.append('name', dataToSend.name)
         formDataToSend.append('description', dataToSend.description)
-        formDataToSend.append('image', formData.value.imageFile)
-     
+        if (formData.value.imageFile) {
+            formDataToSend.append('image', formData.value.imageFile)
+        }
 
         // 发送请求
-        const response = await axios.post('/api/playList/update', formDataToSend, {
+        const response = await axios.post('/api/playList/add', formDataToSend, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }

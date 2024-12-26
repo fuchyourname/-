@@ -36,8 +36,8 @@
                           <p class="text-gray-600 text-sm">{{ song.artist }}</p>
                         </div>
                         <button class="text-gray-600 hover:text-gray-800 focus:outline-none ml-auto"
-                          @click="playSong(song.songId)">
-                          <svg v-if="!(song.songId === currentMusicId && isPlaying)" xmlns="http://www.w3.org/2000/svg"
+                          @click="playSong()">
+                          <svg v-if="!(song.songId == currentMusicId && isPlaying)" xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24" fill="currentColor" class="size-6">
                             <path fill-rule="evenodd"
                               d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
@@ -93,5 +93,11 @@ const closePlayList = () => {
 
 watch(() => props.isOpen, (newVal) => {
   console.log(`PlayList visibility changed to: ${newVal}`);
+});
+const playSong = () => {
+    musicStore.setIsPaused(isPlaying);
+};
+watch(() => musicStore.getIsPaused, () => {
+  isPlaying.value = !musicStore.getIsPaused;
 });
 </script>

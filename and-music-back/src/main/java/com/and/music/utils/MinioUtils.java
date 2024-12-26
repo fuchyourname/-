@@ -1,11 +1,13 @@
 package com.and.music.utils;
 
 import com.and.music.config.MinioProperties;
+import com.and.music.vo.FileVo;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
 import lombok.SneakyThrows;
+import org.apache.tomcat.jni.FileInfo;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -55,29 +57,40 @@ public class MinioUtils {
     }
 
     /*
-     * 分页获取minio下的指定桶的图片,返回包含完整路径名和文件名的集合
-     */
-public List<String> getAllImgList(String bucketName, String prefix) {
-    List<String> imgList = new ArrayList<>();
-    try {
-        Iterable<Result<Item>> results = minioClient.listObjects(
-                ListObjectsArgs.builder()
-                        .prefix(prefix)
-                        .bucket(bucketName)
-                        .recursive(true)
-                        .build());
-        for (Result<Item> result : results) {
-            Item item = result.get();
-            String objectName = item.objectName();
-            String objectUrl = minioProperties.getUrl() + "/" + bucketName + "/" + objectName;
-            imgList.add(objectUrl);
-        }
-        return imgList;
-    } catch (Exception e) {
-        e.printStackTrace();
-        return null;
+    获取所有图片的路径、名称、大小
+    */
+    public List<FileVo> getAllFiles(String bucketName, String prefix) {
+        List<FileVo> fileInfoList = new ArrayList<>();
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs
+                            .builder()
+                            .bucket(bucketName)
+                            .prefix(prefix)
+                            .recursive(true)
+                            .build());
+            for (Result<Item> result : results) {
+                Item item = result.get();
+                FileVo fileInfo = new FileVo();
+                String objectName = item.objectName();
+                fileInfo.setFileName(objectName.split("/")[2]);
+                Long size = item.size() / 1024 / 1024;
+                String fileSize = "";
+                if (size == 0) {
+                    size = item.size() / 1024;
+                    fileSize = size + "KB";
+                } else {
+                    fileSize = item.size() / 1024 / 1024 + "MB";
+                }
+                fileInfo.setFileSize(fileSize);
+                fileInfo.setFile(minioProperties.getUrl() + "/" + bucketName + "/" + item.objectName());
+                fileInfoList.add(fileInfo);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+       }
+        return fileInfoList;
     }
-}
 
 
     /**

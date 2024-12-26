@@ -42,8 +42,15 @@ public class GenresServiceImpl extends ServiceImpl<GenresMapper, Genres>
                 .setUpdateUser(UserContext.getUser().getUserId())
                 .setCreateUser(UserContext.getUser().getUserId());
 
-        if (this.baseMapper.insert(genres) > 0) {
-            return R.ok();
+        if (ObjectUtil.isNotEmpty(genreDto.getGenreId())) {
+            genres.setGenreId(genreDto.getGenreId());
+            if (this.baseMapper.updateById(genres) > 0) {
+                return R.ok(genres);
+            }
+        } else {
+            if (this.baseMapper.insert(genres) > 0) {
+                return R.ok(genres);
+            }
         }
         return R.fail("添加分类失败");
     }

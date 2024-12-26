@@ -52,8 +52,8 @@ public class MusicController {
     }
 
     // 添加音乐播放量
-    @PostMapping("/addPlayCount")
-    public R addPlayCount(@RequestParam("songId") Integer songId) {
+    @GetMapping("/addPlayCount/{songId}")
+    public R addPlayCount(@PathVariable("songId") Integer songId) {
         return songsService.addPlayCount(songId);
     }
     @GetMapping("/hot")
@@ -61,6 +61,7 @@ public class MusicController {
         List<SongVo> hotSongs = songsService.getHotSongsFromCache();
         Playlists playlists = playlistsService.getById(2);
         PlaylistVo playlistVo = new PlaylistVo();
+        playlistVo.setImageUrl(playlists.getImageUrl());
         playlistVo.setName(playlists.getName()).setSongs(hotSongs);
         playlistVo.setDescription(playlists.getDescription());
         return R.ok(playlistVo);
@@ -71,6 +72,7 @@ public class MusicController {
         List<SongVo> newSongs = songsService.getNewSongsFromCache();
         Playlists playlists = playlistsService.getById(3);
         PlaylistVo playlistVo = new PlaylistVo();
+        playlistVo.setImageUrl(playlists.getImageUrl());
         playlistVo.setName(playlists.getName()).setSongs(newSongs);
         playlistVo.setDescription(playlists.getDescription());
         return R.ok(playlistVo);

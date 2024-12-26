@@ -1,5 +1,6 @@
 // src/stores/useMusicStore.js
 import axios from 'axios';
+import { set } from 'date-fns';
 import { defineStore } from 'pinia';
 
 export const useMusicStore = defineStore('music', {
@@ -16,9 +17,16 @@ export const useMusicStore = defineStore('music', {
       "lyricPath": "",
       "like": null
     },
+    isPaused: true,
     currentPlaylist: [], // 新增字段
   }),
   actions: {
+    setIsPaused(isPaused) {
+      this.isPaused = isPaused;
+    },
+    getIsPaused() {
+      return this.isPaused;
+    },
     setCurrentMusic(music) {
       this.currentMusic = music;
     },

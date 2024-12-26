@@ -47,14 +47,15 @@ public class PlayerController {
 
     // 修改歌手信息
     @PostMapping("/updatePlayer")
-    public R updatePlayer(
-            @RequestParam("artistId") Integer artistId,
+    public R saveOrUpdatePlayer(
+            @RequestParam(name = "artistId", required = false) Integer artistId,
             @RequestParam("name") String name,
                           @RequestParam("bio") String bio,
                           @RequestParam(name = "pic", required = false) MultipartFile pic,
                           @RequestParam("sex") Integer sex,
                           @RequestParam("nationality") String nationality) {
         ArtistDto artistDto = new ArtistDto()
+                .setArtistId(artistId)
                 .setArtistId(artistId)
                 .setName(name)
                 .setBio(bio)

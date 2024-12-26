@@ -122,7 +122,7 @@
       </nav>
     </div>
     <!-- Genre Modal -->
-    <!-- <GenreModal v-model="isModalOpen" :genre="editingGenre" @save="handleSaveGenre"/> -->
+    <GenreModal v-model="isModalOpen" :genre="editingGenre" @save="handleSaveGenre"/>
   </div>
 </template>
 
@@ -179,15 +179,13 @@ const openEditGenreModal = (genre) => {
 }
 
 const handleSaveGenre = (genre) => {
-  if (genre.id) {
+  if (genre.genreId) {
     // Edit existing genre
-    const index = genres.value.findIndex(g => g.id === genre.id)
+    const index = genres.value.findIndex(g => g.genreId === genre.genreId)
     if (index !== -1) {
       genres.value[index] = genre
     }
   } else {
-    // Add new genre
-    genre.id = genres.value.length + 1
     genres.value.push(genre)
   }
   isModalOpen.value = false

@@ -13,6 +13,7 @@ import java.util.Date;
 @Accessors(chain = true)
 public class GenreDto {
 
+    private Integer genreId;
     private String name;
     private String description;
     // 1-歌曲 2-歌手 3-歌单
