@@ -154,7 +154,7 @@ const fetchFavoritePlaylists = async () => {
     if (favoriteNavItem) {
       favoriteNavItem.children = playlists.map(playlist => ({
         name: playlist.name,
-        href: `/home/myMusic/songlistdetails/${playlist.id}`,
+        href: `/home/myMusic/songlistdetails/${playlist.playlistId}`,
         imageUrl: playlist.imageUrl
       }))
     }
