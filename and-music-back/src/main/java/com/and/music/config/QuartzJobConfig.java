@@ -43,7 +43,7 @@ public class QuartzJobConfig {
     @Bean
     public Trigger addPlayCountJobTrigger(JobDetail addPlayCountJobDetail) {
         SimpleScheduleBuilder scheduleBuilder = SimpleScheduleBuilder.simpleSchedule()
-                .withIntervalInMinutes(2)
+                .withIntervalInMinutes(1)
                 .repeatForever();
 
         return TriggerBuilder.newTrigger()

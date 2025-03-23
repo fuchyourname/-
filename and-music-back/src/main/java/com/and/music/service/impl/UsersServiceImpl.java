@@ -78,6 +78,8 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
                 UserVo userVo = new UserVo()
                         .setUserId(user.getUserId())
                         .setUsername(user.getUserName())
+                        .setFansCount(followCount)
+                        .setEmail(user.getEmail())
                         .setAvatar(user.getPicUrl())
                         .setNationality(user.getNationality())
                         .setDescription(user.getDescription())
@@ -101,9 +103,18 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         user.setUserName(userDto.getUserName());
         user.setPassword(userDto.getPassword());
         user.setEmail(userDto.getEmail());
-        user.setCreateUser(userDto.getUserId());
-        user.setUpdateUser(userDto.getUserId());
+        user.setPicUrl(null);
+        user.setStatus(1);
+        user.setType(0);
+        user.setNationality("暂无更多数据");
+        user.setDescription("用户很懒, 暂无更多数据");
+        user.setCreateUser(1);
+        user.setUpdateUser(1);
 
+        // 判断用户名是否重复
+        if (ObjectUtil.isNotEmpty(getOne(new LambdaQueryWrapper<Users>().eq(Users::getUserName, userDto.getUserName())))) {
+            return R.fail("用户名重复");
+        }
         if (save(user)) {
             return R.ok();
         }
@@ -160,14 +171,18 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         users.setDescription(userDto.getDescription());
         users.setNationality(userDto.getNationality());
         users.setUpdateUser(UserContext.getUser().getUserId());
-        users.setType(userDto.getType());
+        if (ObjectUtil.isNotEmpty(userDto.getType())) {
+            users.setType(userDto.getType());
+        }
         users.setUserName(userDto.getUserName());
         users.setEmail(userDto.getEmail());
         if (ObjectUtil.isNotEmpty(userDto.getPic())) {
             try {
                 // http://192.168.154.1:9000/music/cover/1/27_1732354594609.jpg
-                String objectName = users.getPicUrl().split("/")[3];
-                minioUtils.removeObject(minioProperties.getBucket(), objectName);
+                if (ObjectUtil.isNotEmpty(users.getPicUrl())) {
+                    String objectName = users.getPicUrl().split("/")[3];
+                    minioUtils.removeObject(minioProperties.getBucket(), objectName);
+                }
                 MultipartFile pl = userDto.getPic();
                 if (pl != null) {
                     // 上传歌曲图片

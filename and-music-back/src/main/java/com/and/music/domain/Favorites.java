@@ -22,6 +22,7 @@ public class Favorites implements Serializable {
 
 
     @TableId(type = IdType.AUTO)
+    private Integer favoriteId;
     private Integer userId;
 
     // 1-歌曲，2-歌单

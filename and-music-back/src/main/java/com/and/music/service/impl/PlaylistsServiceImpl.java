@@ -8,6 +8,7 @@ import com.and.music.dto.FileDto;
 import com.and.music.dto.PageInfo;
 import com.and.music.dto.PlaylistDto;
 import com.and.music.mapper.*;
+import com.and.music.service.BehaviorInitializerService;
 import com.and.music.service.PlaylistsService;
 import com.and.music.service.SongsService;
 import com.and.music.utils.MinioUtils;
@@ -64,6 +65,10 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
     @Resource
     private SongsService songService;
     @Resource
+    private BehaviorInitializerService behaviorInitializerService;
+    @Resource
+    private UserBehaviorMapper userBehaviorMapper;
+    @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
     @Override
@@ -86,7 +91,7 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
                     .setImageUrl(playlists.getImageUrl());
             if (ObjectUtil.equal(playlists.getPlaylistId(), 2)) {
                 playlistVo.setSongs(songService.getHotSongsFromCache());
-            }else if (ObjectUtil.equal(playlists.getPlaylistId(), 3)) {
+            } else if (ObjectUtil.equal(playlists.getPlaylistId(), 3)) {
                 playlistVo.setSongs(songService.getNewSongsFromCache());
             } else {
                 playlistVo.setSongs(new ArrayList<>());
@@ -301,42 +306,6 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
     }
 
     @Override
-    public R getRecommendPlaylists() {
-        /**
-         * 1、获取歌单表中前十条记录
-         * 2. 根据用户id获取用户信息
-         * 3. 构造返回结果
-         */
-        LambdaQueryWrapper<Playlists> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.ne(Playlists::getType, 0);
-        queryWrapper.orderByDesc(Playlists::getPlayCount);
-        queryWrapper.eq(Playlists::getStatus, 1);
-        queryWrapper.last("limit 10");
-        List<Playlists> playlistsList = list(queryWrapper);
-
-        if (ObjectUtil.isEmpty(playlistsList)) {
-            return R.ok("暂无推荐歌单");
-        }
-        List<Integer> userIds = playlistsList.stream().
-                map(Playlists::getUserId).collect(Collectors.toList());
-        if (ObjectUtil.isEmpty(userIds)) {
-            return R.fail("获取推荐歌单失败");
-        }
-        List<Users> usersList = usersMapper.selectBatchIds(userIds);
-
-        List<PlaylistVo> playlistVoList = playlistsList.stream().map(playlists -> {
-            return new PlaylistVo()
-                    .setPlaylistId(playlists.getPlaylistId())
-                    .setUserName(usersList.stream().filter(users -> users.getUserId().equals(playlists.getUserId())).findFirst().get().getUserName())
-                    .setName(playlists.getName())
-                    .setDescription(playlists.getDescription())
-                    .setImageUrl(playlists.getImageUrl());
-        }).collect(Collectors.toList());
-
-        return R.ok(playlistVoList);
-    }
-
-    @Override
     public R getPlaylistDetail(Integer playlistId) {
 
         if (ObjectUtil.isEmpty(playlistId)) {
@@ -348,6 +317,8 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
         if (ObjectUtil.isEmpty(playlists)) {
             return R.fail("未找到该歌单");
         }
+        behaviorInitializerService.
+                recordUserBehavior(UserContext.getUser().getUserId(), playlistId, "BROWSE");
         playlistVo.setPlaylistId(playlists.getPlaylistId())
                 .setName(playlists.getName())
                 .setDescription(playlists.getDescription())
@@ -366,6 +337,7 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
         List<Integer> songIds = playlistSongsList.
                 stream().map(PlaylistSongs::getSongId).collect(Collectors.toList());
         List<Songs> songsList = songsMapper.selectBatchIds(songIds);
+
         if (ObjectUtil.isEmpty(songsList)) {
             return R.ok(playlistVo);
         }
@@ -386,6 +358,7 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
                     .setFilePath(songs.getFilePath())
                     .setLyricPath(songs.getLyricPath());
         }).collect(Collectors.toList()));
+
         return R.ok(playlistVo);
     }
 
@@ -494,12 +467,15 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
 
 
     @Override
-    public R addPlayCount(Integer playlistId) {
+    public R addPlayCount(Integer playlistId, Integer songId) {
 
-        if (ObjectUtil.isEmpty(playlistId)) {
+        if (ObjectUtil.isEmpty(songId)) {
             return R.fail("参数错误");
         }
+        behaviorInitializerService.
+                recordUserBehavior(UserContext.getUser().getUserId(), playlistId, "PLAY");
         redisTemplate.opsForHash().increment("PlayListPlayCount", playlistId.toString(), 1);
+
         return R.ok();
     }
 
@@ -515,6 +491,7 @@ public class PlaylistsServiceImpl extends ServiceImpl<PlaylistsMapper, Playlists
             playlists.setPlayCount(playlists.getPlayCount() +
                     Long.parseLong(redisTemplate.opsForHash().get("PlayListPlayCount", playlistId.toString()).toString()));
             this.baseMapper.updateById(playlists);
+            redisTemplate.opsForHash().delete("PlayListPlayCount", playlistId.toString());
         }
     }
 }

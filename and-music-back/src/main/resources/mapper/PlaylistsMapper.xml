@@ -4,5 +4,21 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.and.music.mapper.PlaylistsMapper">
 
+    <select id="getUserBehaviorVector" resultType="map">
+        SELECT playlist_id, normalized_value
+        FROM user_behavior
+        WHERE user_id = #{userId}
+    </select>
 
+    <!-- 通过 UNION 空查询确保返回列表结构 -->
+    <select id="getAllUserBehaviors" resultMap="userBehaviorMap">
+        SELECT user_id, playlist_id, normalized_value
+        FROM user_behavior
+    </select>
+
+    <resultMap id="userBehaviorMap" type="com.and.music.domain.UserBehavior">
+        <result property="userId" column="user_id"/>
+        <result property="playlistId" column="playlist_id"/>
+        <result property="normalizedValue" column="normalized_value"/>
+    </resultMap>
 </mapper>

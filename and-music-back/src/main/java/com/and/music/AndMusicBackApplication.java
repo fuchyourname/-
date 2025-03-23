@@ -1,6 +1,7 @@
 package com.and.music;
 
 import com.and.music.config.MinioProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
@@ -25,7 +26,6 @@ public class AndMusicBackApplication {
 
     @Resource
     private MinioProperties minioAutoProperties;
-
     @Bean
     public MinioClient minioClient() {
         log.info("开始初始化MinioClient, url为{}, accessKey为:{}", minioAutoProperties.getUrl(), minioAutoProperties.getAccessKey());

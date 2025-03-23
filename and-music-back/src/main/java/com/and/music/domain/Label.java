@@ -17,6 +17,8 @@ public class Label {
     private String name;
     private String description;
     private Integer createUser;
+    private Integer type;
+    private Integer contentId;
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
     private Integer updateUser;

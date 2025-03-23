@@ -25,4 +25,5 @@ public class PlaylistVo {
     private Integer songCount;
     private Long playCount;
     private List<SongVo> songs;
+    private List<String> labels;
 }

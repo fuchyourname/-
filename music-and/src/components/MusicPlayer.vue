@@ -251,6 +251,8 @@ watch(currentSong, async () => {
 
   // 设置新的音频源
   audioPlayer.value.src = currentSong.value.filePath;
+  
+  musicStore.addPlayCount();
 
   try {
     await audioPlayer.value.load(); // 加载新歌曲

@@ -3,7 +3,7 @@
     <div class="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
       <div class="mx-auto w-full max-w-sm lg:w-96">
         <div>
-          <img class="h-10 w-auto" src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company" />
+          <p class="h-10 w-auto" />
           <h2 class="mt-8 text-2xl font-bold leading-9 tracking-tight text-gray-900">Sign in to your account</h2>
         </div>
 
@@ -31,7 +31,7 @@
                 </div>
 
                 <div class="text-sm leading-6">
-                  <a href="#" class="font-semibold text-indigo-600 hover:text-indigo-500">Forgot password?</a>
+                  <button @click="handleRegister" class="font-semibold text-indigo-600 hover:text-indigo-500">Forgot password?</button>
                 </div>
               </div>
 
@@ -91,6 +91,11 @@ const user = ref({
 
 const userStore = useUserStore();
 const router = useRouter();
+
+// 点击注册按钮进行跳转
+const handleRegister = () => {
+  router.push('/register');
+};
 
 const handleLogin = async () => {
   try {

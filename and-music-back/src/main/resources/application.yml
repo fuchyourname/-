@@ -20,7 +20,7 @@ spring:
     password: 123456
 ## ====================== ↓↓↓↓↓↓ MinIO文件服务器 ↓↓↓↓↓↓ ======================
 minio:
-  url: http://192.168.154.1:9000 #注意此处端口，并非Minio默认端口，并且不是Minio网页端口
+  url: http://127.0.0.1:9000 #注意此处端口，并非Minio默认端口，并且不是Minio网页端口
   accessKey: and
   secretKey: 123456789root
   bucket: music

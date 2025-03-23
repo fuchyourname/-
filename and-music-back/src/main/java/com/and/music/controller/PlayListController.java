@@ -1,19 +1,25 @@
 package com.and.music.controller;
 
 
+import cn.hutool.core.util.ObjectUtil;
 import com.and.music.common.R;
+import com.and.music.domain.Label;
+import com.and.music.domain.Playlists;
 import com.and.music.dto.PageInfo;
 import com.and.music.dto.PlaylistDto;
-import com.and.music.service.FavoritesService;
-import com.and.music.service.GenresService;
-import com.and.music.service.PlaylistsService;
-import com.and.music.service.SongsService;
+import com.and.music.mapper.LabelMapper;
+import com.and.music.service.*;
+import com.and.music.utils.UserContext;
+import com.and.music.vo.PlaylistVo;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/playList")
@@ -24,6 +30,8 @@ public class PlayListController {
     private final PlaylistsService playlistsService;
     private final GenresService genresService;
     private final FavoritesService favoritesService;
+    private final CFRecommenderService cfRecommenderService;
+    private final LabelMapper labelMapper;
 
     // 新增
     @PostMapping("/add")
@@ -110,9 +118,11 @@ public class PlayListController {
     }
 
     // 添加歌单播放量
-    @PostMapping("/addPlayCount")
-    public R addPlayCount(@RequestParam("playlistId") Integer playlistId) {
-        return playlistsService.addPlayCount(playlistId);
+    @GetMapping("/addPlayCount")
+    public R addPlayCount(@RequestParam("playlistId") Integer playlistId,
+                          @RequestParam("songId") Integer songId
+    ) {
+        return playlistsService.addPlayCount(playlistId, songId);
     }
     // 根据类型获取歌单
     @GetMapping("/getPlayListByType")
@@ -122,7 +132,32 @@ public class PlayListController {
     // 获取推荐歌单
     @GetMapping("/getRecommendPlayList")
     public R getRecommendPlayList() {
-        return playlistsService.getRecommendPlaylists();
+        List<Playlists> playlists = cfRecommenderService.recommend(UserContext.getUser().getUserId(), 10);
+        List<Integer> playlistIds = playlists.stream().map(Playlists::getPlaylistId).collect(Collectors.toList());
+        LambdaQueryWrapper<Label> labelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if (ObjectUtil.isEmpty(playlistIds)) {
+            return R.ok();
+        }else {
+            if (playlistIds.size() == 1) {
+                labelLambdaQueryWrapper.eq(Label::getContentId, playlistIds.get(0))
+                        .eq(Label::getType, 0);
+            } else {
+                labelLambdaQueryWrapper.in(Label::getContentId, playlistIds)
+                        .eq(Label::getType, 0);
+            }
+        }
+        List<Label> labels = labelMapper.selectList(labelLambdaQueryWrapper);
+        List<PlaylistVo> playlistVos = playlists.stream().map(playlist -> {
+            return new PlaylistVo()
+                    .setPlaylistId(playlist.getPlaylistId())
+                    .setName(playlist.getName())
+                    .setDescription(playlist.getDescription())
+                    .setImageUrl(playlist.getImageUrl())
+                    .setPlayCount(playlist.getPlayCount())
+                    .setLabels(labels.stream().filter(label -> label.getContentId().equals(playlist.getPlaylistId()))
+                            .map(Label::getName).collect(Collectors.toList()));
+        }).collect(Collectors.toList());
+        return R.ok(playlistVos);
     }
     // 新增歌单
     @PostMapping("/addPlayList")

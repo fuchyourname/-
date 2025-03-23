@@ -2,7 +2,7 @@
   <div class="bg-gray-100 flex justify-center min-h-screen">
     <div class="w-4/5 mt-4">
       <DynamicItem v-for="(post, index) in posts" :key="post.username" :post="post" @like="likePost" @toggle-comments="toggleComments" @add-comment="addComment" @like-comment="likeComment" @toggle-comment-comments="toggleCommentComments" @like-sub-comment="likeSubComment" />
-      <div class="text-center text-gray-500 mt-8">没有更多数据了</div>
+      <div class="text-center text-gray-500 mt-8 mb-24">没有更多数据了</div>
     </div>
   </div>
 </template>

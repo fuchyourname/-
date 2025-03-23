@@ -16,10 +16,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -129,6 +126,8 @@ public class DynamicsServiceImpl extends ServiceImpl<DynamicsMapper, Dynamics>
             }else
                 dynamicsVo.setComments(commentVoMap.get(dynamicsVo.getDynamicId()));
         });
+        // 根据创建时间排序, 创建时间最近的排在前面
+        dynamicsVoList.sort(Comparator.comparing(DynamicsVo::getCreateTime).reversed());
         return R.ok(dynamicsVoList);
     }
 

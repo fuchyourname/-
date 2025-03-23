@@ -196,6 +196,7 @@ public class SongsServiceImpl extends ServiceImpl<SongsMapper, Songs>
             song.setPlayCount(song.getPlayCount() +
                     Long.parseLong(redisTemplate.opsForHash().get("SongPlayCount", songId.toString()).toString()));
             this.baseMapper.updateById(song);
+            redisTemplate.opsForHash().delete("SongPlayCount", songId.toString());
         }
     }
 

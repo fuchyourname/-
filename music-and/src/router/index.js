@@ -39,10 +39,12 @@ import AlbumsList from '../components/player/AlbumsList.vue'
 import SettingsView from '../views/SettingsView.vue'
 import RankListView from '../views/RankListView.vue'
 import RankListDetailView from '../views/RankListDetailView.vue'
+import RegisterView from '../views/RegisterView.vue'
 
 const routes = [
   { path: '/', component: LoginView },
   { path: '/login', component: LoginView },
+  { path: '/register', component: RegisterView },
   {
     path: '/admin',
     component: AdminIndex,

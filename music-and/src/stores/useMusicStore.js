@@ -19,6 +19,7 @@ export const useMusicStore = defineStore('music', {
     },
     isPaused: true,
     currentPlaylist: [], // 新增字段
+    currentPlaylistId: null,
   }),
   actions: {
     setIsPaused(isPaused) {
@@ -27,6 +28,12 @@ export const useMusicStore = defineStore('music', {
     getIsPaused() {
       return this.isPaused;
     },
+    setCurrentPlaylistId(id) {
+      this.currentPlaylistId = id;
+    },
+    getCurrentPlaylistId() {
+      return this.currentPlaylistId;
+    }, 
     setCurrentMusic(music) {
       this.currentMusic = music;
     },
@@ -72,10 +79,30 @@ export const useMusicStore = defineStore('music', {
           },
         });
         return response.data.data;
+        // 增加播放次数
+      } catch (error) {
+        console.error('Error fetching song URL:', error);
+        return null;
+      } finally {
+        this.addPlayCount();
+      }
+    },
+    // 给歌单增加播放次数
+    async addPlayCount() {
+      try {
+        const response = await axios.get('/api/playList/addPlayCount', {
+          params: {
+            // 将Id转为整数.
+            playlistId: parseInt(this.currentPlaylistId),
+
+          songId: this.currentMusic.songId,
+          },
+        });
+        return response.data.data;
       } catch (error) {
         console.error('Error fetching song URL:', error);
         return null;
       }
-    }
+    },
   },
 });

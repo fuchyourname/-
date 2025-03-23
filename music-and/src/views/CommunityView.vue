@@ -237,8 +237,8 @@ import DynamicsList from '../components/DynamicsList.vue'
 import axios from 'axios'
 
 const songs = [
-  { id: 29, title: '银河飞车', artist: '张叶蕾', coverPath: 'http://192.168.154.1:9000/music/cover/1/29_1733057020002.jpg' },
-  { id: 32, title: '忽然之间', artist: '莫文蔚', coverPath: 'http://192.168.154.1:9000/music/cover/1/32_1733057201514.jpg' },
+  { id: 29, title: '银河飞车', artist: '张叶蕾', coverPath: 'http://127.0.0.1:9000/music/cover/1/29_1733057020002.jpg' },
+  { id: 32, title: '忽然之间', artist: '莫文蔚', coverPath: 'http://127.0.0.1:9000/music/cover/1/32_1733057201514.jpg' },
 ];
 
 const searchQuery = ref('');

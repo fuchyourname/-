@@ -26,4 +26,7 @@ public class PlaylistDto {
     private MultipartFile image;
 
     private List<Integer> songIds;
+
+    private List<String> labels;
+
 }

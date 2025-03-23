@@ -88,7 +88,6 @@ public class UserController {
                         @RequestParam("description") String description,
                         @RequestParam("nationality") String nationality,
                         @RequestParam("email") String email,
-                        @RequestParam("type") Integer type,
                         @RequestParam(name = "pic", required = false) MultipartFile pic
                         ) {
         UserDto userDto = new UserDto()
@@ -97,7 +96,6 @@ public class UserController {
                 .setDescription(description)
                 .setNationality(nationality)
                 .setEmail(email)
-                .setType(type)
                 .setPic(pic);
         return usersService.updateUser(userDto);
     }

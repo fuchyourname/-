@@ -145,12 +145,12 @@ const fetchPlaylistData = async () => {
       }
     });
     playlist.value = response.data.data;
+    // 检查是否已收藏
+    checkIfFavorited();
     songs.value = response.data.data.songs.map(song => ({
       ...song,
       isLiked: false // 初始化点赞状态
     }));
-    // 检查是否已收藏
-    checkIfFavorited();
     // 检查每首歌的点赞状态
     checkLikes();
   } catch (error) {
@@ -245,6 +245,7 @@ watch(
 const handleSongClick = (song) => {
   musicStore.setCurrentPlaylist(songs.value);
   musicStore.setCurrentMusic(song);
+  musicStore.setCurrentPlaylistId(playlistId.value);
 };
 
 const handleSong = () => {

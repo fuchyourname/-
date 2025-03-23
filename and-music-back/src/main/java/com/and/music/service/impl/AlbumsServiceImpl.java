@@ -220,6 +220,7 @@ public class AlbumsServiceImpl extends ServiceImpl<AlbumsMapper, Albums>
             album.setPlayCount(album.getPlayCount() +
                     Long.parseLong(stringRedisTemplate.opsForHash().get("AlbumPlayCount", albumId.toString()).toString()));
             this.baseMapper.updateById(album);
+            stringRedisTemplate.opsForHash().delete("AlbumPlayCount", albumId.toString());
         }
     }
 }

@@ -36,7 +36,6 @@ public interface PlaylistsService extends IService<Playlists> {
     // 歌单分页
     public R getPlaylistPage(PageInfo pageInfo);
     // 获取推荐歌单
-    public R getRecommendPlaylists();
     // 获取歌单详情
     public R getPlaylistDetail(Integer playlistId);
     // 根据类型获取歌单列表
@@ -46,7 +45,7 @@ public interface PlaylistsService extends IService<Playlists> {
     // 获取用户收藏的歌单列表
     public R getUserFavorites();
     // 增加歌单的播放次数
-    R addPlayCount(Integer playlistId);
+    R addPlayCount(Integer playlistId, Integer songId);
     // 保存歌单的播放次数
     void savePlayCount(Integer playlistId);
 }
